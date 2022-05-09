@@ -1,21 +1,4 @@
-contracts/l2/**/*.json
-contracts/l2/**/*.txt
-
-__pycache__
-dist
-build
-*.egg-info
-
 node_modules
 .env
-.env.deployer
-.env.deployments
-
-#Hardhat files
-cache
-deployments/localhost
-contracts/l2/sample_spell.cairo
-deployer-key.json
-deployments
 yarn-error.log
-contracts/l2/dai_rescue_spell.cairo
+**/*.js
