@@ -1,10 +1,11 @@
+import { ethers, Signer } from "ethers";
 import fs from "fs";
-import delay from "delay";
 import * as starknet from "starknet";
-import { ethers, utils } from "ethers";
 import { assert } from "ts-essentials";
 const { genKeyPair, getStarkKey } = starknet.ec;
 import * as dotenv from "dotenv";
+import { L1DAIWormholeGateway } from "types/ethers-contracts";
+import { l2_dai_wormhole_gateway } from "types/starknet-contracts/l2_dai_wormhole_gateway";
 dotenv.config();
 
 const NETWORK = getRequiredEnv("NETWORK").toUpperCase();
@@ -36,7 +37,7 @@ export function getRequiredEnv(key: string): string {
 export async function getL1ContractAt(signer: any, name: string, address: string) {
   console.log(`Using existing contract: ${name} at: ${address}`);
   const compiledContract = JSON.parse(
-    fs.readFileSync(`./abis/${name}.json`).toString("ascii")
+    fs.readFileSync(`./abis/l1/${name}.json`).toString("ascii")
   );
   const contractFactory = new ethers.ContractFactory(compiledContract.abi, compiledContract.bytecode, signer);
   return contractFactory.attach(address);
@@ -45,13 +46,13 @@ export async function getL1ContractAt(signer: any, name: string, address: string
 export async function getL2ContractAt(signer: any, name: string, address: string) {
   console.log(`Using existing contract: ${name} at: ${address}`);
   const compiledContract = JSON.parse(
-    fs.readFileSync(`./abis/${name}.json`).toString("ascii")
+    fs.readFileSync(`./abis/l2/${name}.json`).toString("ascii")
   );
   const contractFactory = new starknet.ContractFactory(compiledContract, signer);
   return contractFactory.attach(address);
 }
 
-function getL1Signer(network: string) {
+function getL1Signer(network: string): Signer {
   let baseUrl;
   const infuraApiKey = getRequiredEnv("INFURA_API_KEY");
   if (network === "LOCALHOST" || ENV === "DEV") {
@@ -66,7 +67,7 @@ function getL1Signer(network: string) {
   return ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
 }
 
-function getL2Signer(network: string) {
+function getL2Signer(network: string): starknet.Account {
   let baseUrl;
   if (network === "LOCALHOST" || ENV === "DEV") {
     baseUrl = "http://localhost:5000";
@@ -85,7 +86,7 @@ function getL2Signer(network: string) {
   const starkKeyPair = starknet.ec.getKeyPair(l2PrivateKey);
   const starkKeyPub = starknet.ec.getStarkKey(starkKeyPair);
   const compiledArgentAccount = JSON.parse(
-    fs.readFileSync("./abis/ArgentAccount.json").toString("ascii")
+    fs.readFileSync("./abis/l2/ArgentAccount.json").toString("ascii")
   );
   return new starknet.Account(provider, address, starkKeyPair);
 }
@@ -127,7 +128,7 @@ async function deployAccount(network: string) {
   );
   await provider.waitForTransaction(initializeTxHash);
   const account = new starknet.Account(provider, accountContract.address, starkKeyPair);
-  console.log(account.address, account.privateKey);
+  console.log(account.address);
 }
 
 async function flush(targetDomain: string) {
@@ -135,10 +136,10 @@ async function flush(targetDomain: string) {
   const l2Signer = getL2Signer(NETWORK);
 
   const l1WormholeGatewayAddress = getRequiredEnv(`${NETWORK}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`);
-  const l1WormholeGateway = await getL1ContractAt(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress);
+  const l1WormholeGateway: L1DAIWormholeGateway = (await getL1ContractAt(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress) as L1DAIWormholeGateway);
 
   const l2WormholeGatewayAddress = getRequiredEnv(`${NETWORK}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`);
-  const l2WormholeGateway = await getL2ContractAt(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress);
+  const l2WormholeGateway: l2_dai_wormhole_gateway = (await getL2ContractAt(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress) as l2_dai_wormhole_gateway);
 
   const wormholeJoinInterface = new ethers.utils.Interface([
     "event Settle(bytes32 indexed sourceDomain, uint256 batchedDaiToFlush)",
@@ -150,7 +151,7 @@ async function flush(targetDomain: string) {
   const recentEvent = events[events.length - 1];
 
   const encodedDomain = l2String(targetDomain);
-  const { res: daiToFlushSplit } = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
+  const daiToFlushSplit = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
   const daiToFlush = toUint(daiToFlushSplit);
   console.log(`DAI to flush: ${daiToFlush}`);
 
@@ -169,8 +170,8 @@ async function finalizeFlush(targetDomain: string) {
   const l1WormholeGatewayAddress = getRequiredEnv(`${NETWORK}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`);
   const l2WormholeGatewayAddress = getRequiredEnv(`${NETWORK}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`);
   const starknetAddress = getRequiredEnv(`${NETWORK}_STARKNET_ADDRESS`);
-  const l1WormholeGateway = await getL1ContractAt(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress);
-  const l2WormholeGateway = await getL2ContractAt(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress);
+  const l1WormholeGateway: L1DAIWormholeGateway = (await getL1ContractAt(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress) as L1DAIWormholeGateway);
+  const l2WormholeGateway: l2_dai_wormhole_gateway = (await getL2ContractAt(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress) as l2_dai_wormhole_gateway);
 
   const starknetInterface = new ethers.utils.Interface([
     "event LogMessageToL1(uint256 indexed fromAddress, address indexed toAddress, uint256[] payload)",
@@ -185,7 +186,7 @@ async function finalizeFlush(targetDomain: string) {
     const consumedMessageEvents = await starknet.queryFilter(consumedMessageFilter, recentLogMessageEvent.blockNumber);
     if (consumedMessageEvents.length < 0) {
       const encodedDomain = l2String(targetDomain);
-      const { res: daiToFlushSplit } = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
+      const daiToFlushSplit = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
       const daiToFlush = toUint(daiToFlushSplit);
 
       console.log("Sending `finalizeFlush` transaction");

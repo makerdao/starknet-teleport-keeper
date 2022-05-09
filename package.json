@@ -11,20 +11,34 @@
   },
   "scripts": {
     "keeper": "esr ./scripts/keeper.ts",
-    "prettier:fix": "prettier --write 'scripts/**/*.{js,jsx,ts,tsx}'"
+    "prettier:fix": "prettier --write 'scripts/**/*.{js,jsx,ts,tsx}'",
+    "lint": "eslint --ext .ts scripts",
+    "typechain:l1": "typechain --target=ethers-v5 './abis/l1/*.json'",
+    "typechain:l2": "typechain --target=starknet './abis/l2/*.json'",
+    "typechain": "yarn typechain:l1 && yarn typechain:l2"
   },
   "dependencies": {
+    "@typechain/ethers-v5": "^10.0.0",
+    "@typechain/starknet": "^0.1.0",
     "@types/node": "^17.0.23",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
     "assert": "^2.0.0",
     "axios": "^0.26.1",
     "delay": "^5.0.0",
     "dotenv": "^16.0.0",
     "esbuild": "^0.14.34",
+    "eslint": "^8.15.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "ethers": "^5.6.2",
     "lodash": "^4.17.21",
     "log-tracking": "^1.2.9",
     "solidity-coverage": "^0.7.20",
     "starknet": "^3.9.0",
-    "ts-essentials": "^9.1.2"
+    "ts-essentials": "^9.1.2",
+    "typechain": "^8.0.0",
+    "typestrict": "^1.0.2"
   }
 }
