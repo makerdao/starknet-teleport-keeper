@@ -27,6 +27,10 @@ function l2String(str: string): string {
   return `0x${Buffer.from(str, "utf8").toString("hex").padStart(64, "0")}`;
 }
 
+function toL1String(hex: string): string {
+  return `0x${BigInt(hex).toString(16).padEnd(64, "0")}`;
+}
+
 export function getRequiredEnv(key: string): string {
   const value = process.env[key];
   assert(value, `Please provide ${key} in .env file`);
@@ -35,7 +39,6 @@ export function getRequiredEnv(key: string): string {
 }
 
 export async function getL1ContractAt(signer: any, name: string, address: string) {
-  console.log(`Using existing contract: ${name} at: ${address}`);
   const compiledContract = JSON.parse(
     fs.readFileSync(`./abis/l1/${name}.json`).toString("ascii")
   );
@@ -44,7 +47,6 @@ export async function getL1ContractAt(signer: any, name: string, address: string
 }
 
 export async function getL2ContractAt(signer: any, name: string, address: string) {
-  console.log(`Using existing contract: ${name} at: ${address}`);
   const compiledContract = JSON.parse(
     fs.readFileSync(`./abis/l2/${name}.json`).toString("ascii")
   );
@@ -109,7 +111,7 @@ async function deployAccount(network: string) {
   const starkKeyPair = starknet.ec.getKeyPair(l2PrivateKey);
   const starkKeyPub = starknet.ec.getStarkKey(starkKeyPair);;
   const compiledArgentAccount = JSON.parse(
-    fs.readFileSync("./abis/ArgentAccount.json").toString("ascii")
+    fs.readFileSync("./abis/l2/ArgentAccount.json").toString("ascii")
   );
   const accountResponse = await provider.deployContract({
     contract: compiledArgentAccount,
@@ -151,7 +153,7 @@ async function flush(targetDomain: string) {
   const recentEvent = events[events.length - 1];
 
   const encodedDomain = l2String(targetDomain);
-  const daiToFlushSplit = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
+  const [daiToFlushSplit] = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
   const daiToFlush = toUint(daiToFlushSplit);
   console.log(`DAI to flush: ${daiToFlush}`);
 
@@ -159,7 +161,9 @@ async function flush(targetDomain: string) {
   const currentBlock = await l1Signer.provider.getBlockNumber();
   if (daiToFlush > 0 && (!recentEvent || recentEvent.blockNumber > currentBlock + FLUSH_DELAY)) {
     console.log("Sending `flush` transaction");
-    await l2WormholeGateway.flush(encodedDomain, { maxFee: "0" });
+    const tx = await l2WormholeGateway.flush(encodedDomain, { maxFee: "0" });
+    const res = await tx.wait();
+    console.log("Success");
   }
 }
 
@@ -179,21 +183,35 @@ async function finalizeFlush(targetDomain: string) {
   ]);
   const starknet = new ethers.Contract(starknetAddress, starknetInterface, l1Signer);
   const logMessageFilter = starknet.filters.LogMessageToL1(l2WormholeGatewayAddress, l1WormholeGatewayAddress);
-  const logMessageEvents = await starknet.queryFilter(logMessageFilter, 6800000);
-  const recentLogMessageEvent = logMessageEvents[logMessageEvents.length-1];
-  if (recentLogMessageEvent) {
-    const consumedMessageFilter = starknet.filters.ConsumedMessageToL1(l2WormholeGatewayAddress, l1WormholeGatewayAddress, recentLogMessageEvent.args.payload);
-    const consumedMessageEvents = await starknet.queryFilter(consumedMessageFilter, recentLogMessageEvent.blockNumber);
-    if (consumedMessageEvents.length < 0) {
-      const encodedDomain = l2String(targetDomain);
-      const daiToFlushSplit = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
-      const daiToFlush = toUint(daiToFlushSplit);
-
-      console.log("Sending `finalizeFlush` transaction");
-      await l1WormholeGateway.finalizeFlush(encodedDomain, daiToFlush);
-    }
+  const lastFlushBlock = parseInt(fs.readFileSync("lastFlushBlock"));
+  const logMessageEvents = await starknet.queryFilter(logMessageFilter, lastFlushBlock);
+  if (logMessageEvents.length > 0) {
+    logMessageEvents.forEach(async (event) => {
+      const consumedMessageFilter = starknet.filters.ConsumedMessageToL1(l2WormholeGatewayAddress, l1WormholeGatewayAddress);
+      const consumedMessageEvents = (await starknet.queryFilter(consumedMessageFilter, event.blockNumber)).filter(consumedEvent => {
+	const eventArgs = event.args.map(_ => _.toString());
+	const consumedEventArgs = consumedEvent.args.map(_ => _.toString());
+	return (
+	  consumedEventArgs[0] === eventArgs[0] &&
+	  consumedEventArgs[1] === eventArgs[1] &&
+	  consumedEventArgs[2] === eventArgs[2] &&
+	  consumedEventArgs[3] === eventArgs[3]
+        );
+      });
+      if (consumedMessageEvents.length == 0) {
+        console.log("Flush message has not been consumed");
+        console.log("Sending `finalizeFlush` transaction");
+	const tx = await l1WormholeGateway.finalizeFlush(toL1String(event.args.payload[1]), event.args.payload[2]);
+	const res = await tx.wait();
+	console.log("Success");
+	fs.writeFileSync("lastFlushBlock", event.blockNumber.toString());
+      } else {
+	console.log("Flush message was consumed");
+      }
+    });
+  } else {
+    console.log("No pending flush");
   }
-  console.log("No pending flush");
 }
 
 if (process.argv[2] === "flush") {
