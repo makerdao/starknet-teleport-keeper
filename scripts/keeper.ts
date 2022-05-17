@@ -1,4 +1,4 @@
-import { ethers, Signer } from "ethers";
+import { Contract, ethers, Signer } from "ethers";
 import fs from "fs";
 import * as starknet from "starknet";
 import { assert } from "ts-essentials";
@@ -38,23 +38,24 @@ export function getRequiredEnv(key: string): string {
   return value;
 }
 
-export async function getL1ContractAt(signer: any, name: string, address: string) {
+export async function getL1ContractAt<C extends Contract>(signer: any, name: string, address: string): C {
   const compiledContract = JSON.parse(
     fs.readFileSync(`./abis/l1/${name}.json`).toString("ascii")
   );
   const contractFactory = new ethers.ContractFactory(compiledContract.abi, compiledContract.bytecode, signer);
-  return contractFactory.attach(address);
+  return contractFactory.attach(address) as C;
 }
 
-export async function getL2ContractAt(signer: any, name: string, address: string) {
+export async function getL2ContractAt<C extends starknet.Contract>(signer: any, name: string, address: string): C {
   const compiledContract = JSON.parse(
     fs.readFileSync(`./abis/l2/${name}.json`).toString("ascii")
   );
   const contractFactory = new starknet.ContractFactory(compiledContract, signer);
-  return contractFactory.attach(address);
+  return contractFactory.attach(address) as C;
 }
 
 function getL1Signer(network: string): Signer {
+  // TODO: refactor to remove code duplication
   let baseUrl;
   const infuraApiKey = getRequiredEnv("INFURA_API_KEY");
   if (network === "LOCALHOST" || ENV === "DEV") {
@@ -70,6 +71,7 @@ function getL1Signer(network: string): Signer {
 }
 
 function getL2Signer(network: string): starknet.Account {
+    // TODO: refactor to remove code duplication
   let baseUrl;
   if (network === "LOCALHOST" || ENV === "DEV") {
     baseUrl = "http://localhost:5000";
@@ -94,6 +96,7 @@ function getL2Signer(network: string): starknet.Account {
 }
 
 async function deployAccount(network: string) {
+    // TODO: refactor to remove code duplication
   let baseUrl;
   if (network === "LOCALHOST" || ENV === "DEV") {
     baseUrl = "http://localhost:5000";
@@ -138,22 +141,26 @@ async function flush(targetDomain: string) {
   const l2Signer = getL2Signer(NETWORK);
 
   const l1WormholeGatewayAddress = getRequiredEnv(`${NETWORK}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`);
-  const l1WormholeGateway: L1DAIWormholeGateway = (await getL1ContractAt(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress) as L1DAIWormholeGateway);
+  const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress);
 
   const l2WormholeGatewayAddress = getRequiredEnv(`${NETWORK}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`);
-  const l2WormholeGateway: l2_dai_wormhole_gateway = (await getL2ContractAt(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress) as l2_dai_wormhole_gateway);
+  const l2WormholeGateway = await getL2ContractAt<l2_dai_wormhole_gateway>(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress);
 
+  // TODO: why l1WormholeJoin is not instantiated with getL1ContractAt?
   const wormholeJoinInterface = new ethers.utils.Interface([
     "event Settle(bytes32 indexed sourceDomain, uint256 batchedDaiToFlush)",
   ]);
   const l1WormholeJoinAddress = getRequiredEnv(`${NETWORK}_L1_WORMHOLE_JOIN_ADDRESS`);
+
   const l1WormholeJoin = new ethers.Contract(l1WormholeJoinAddress, wormholeJoinInterface, l1Signer);
   const filter = l1WormholeJoin.filters.Settle(l1String(SOURCE_DOMAIN));
+  // TODO: will this work in case of long history?
   const events = await l1WormholeJoin.queryFilter(filter);
   const recentEvent = events[events.length - 1];
 
   const encodedDomain = l2String(targetDomain);
   const [daiToFlushSplit] = await l2WormholeGateway.batched_dai_to_flush(encodedDomain);
+  // TODO: daiToFlushSplit is types BigNumberish by tc while in reality it is BigNumber
   const daiToFlush = toUint(daiToFlushSplit);
   console.log(`DAI to flush: ${daiToFlush}`);
 
@@ -162,6 +169,7 @@ async function flush(targetDomain: string) {
   if (daiToFlush > 0 && (!recentEvent || recentEvent.blockNumber > currentBlock + FLUSH_DELAY)) {
     console.log("Sending `flush` transaction");
     const tx = await l2WormholeGateway.flush(encodedDomain, { maxFee: "0" });
+    // TODO: I am getting a warning here: Property 'wait' does not exist on type 'AddTransactionResponse'
     const res = await tx.wait();
     console.log("Success");
   }
@@ -177,12 +185,14 @@ async function finalizeFlush(targetDomain: string) {
   const l1WormholeGateway: L1DAIWormholeGateway = (await getL1ContractAt(l1Signer, "L1DAIWormholeGateway", l1WormholeGatewayAddress) as L1DAIWormholeGateway);
   const l2WormholeGateway: l2_dai_wormhole_gateway = (await getL2ContractAt(l2Signer, "l2_dai_wormhole_gateway", l2WormholeGatewayAddress) as l2_dai_wormhole_gateway);
 
+  // TODO: again why no tc here?
   const starknetInterface = new ethers.utils.Interface([
     "event LogMessageToL1(uint256 indexed fromAddress, address indexed toAddress, uint256[] payload)",
     "event ConsumedMessageToL1(uint256 indexed fromAddress, address indexed toAddress,uint256[] payload)",
   ]);
   const starknet = new ethers.Contract(starknetAddress, starknetInterface, l1Signer);
   const logMessageFilter = starknet.filters.LogMessageToL1(l2WormholeGatewayAddress, l1WormholeGatewayAddress);
+  // TODO: Why not to use last Settle event to estimate starting block?
   const lastFlushBlock = parseInt(fs.readFileSync("lastFlushBlock"));
   const logMessageEvents = await starknet.queryFilter(logMessageFilter, lastFlushBlock);
   if (logMessageEvents.length > 0) {
