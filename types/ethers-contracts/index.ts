@@ -2,5 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { L1DAIWormholeGateway } from "./L1DAIWormholeGateway";
+export type { Starknet } from "./Starknet";
+export type { WormholeJoin } from "./WormholeJoin";
 export * as factories from "./factories";
 export { L1DAIWormholeGateway__factory } from "./factories/L1DAIWormholeGateway__factory";
+export { Starknet__factory } from "./factories/Starknet__factory";
+export { WormholeJoin__factory } from "./factories/WormholeJoin__factory";

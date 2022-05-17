@@ -11,8 +11,9 @@
   },
   "scripts": {
     "keeper": "esr ./scripts/keeper.ts",
-    "prettier:fix": "prettier --write 'scripts/**/*.{js,jsx,ts,tsx}'",
+    "prettier:fix": "prettier --write 'scripts/**/*.ts'",
     "lint": "eslint --ext .ts scripts",
+    "lint:fix": "yarn lint --fix",
     "typechain:l1": "typechain --target=ethers-v5 './abis/l1/*.json'",
     "typechain:l2": "typechain --target=starknet './abis/l2/*.json'",
     "typechain": "yarn typechain:l1 && yarn typechain:l2"

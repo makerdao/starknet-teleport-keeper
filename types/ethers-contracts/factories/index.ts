@@ -2,3 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export { L1DAIWormholeGateway__factory } from "./L1DAIWormholeGateway__factory";
+export { Starknet__factory } from "./Starknet__factory";
+export { WormholeJoin__factory } from "./WormholeJoin__factory";

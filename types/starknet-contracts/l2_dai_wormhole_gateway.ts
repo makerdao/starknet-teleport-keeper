@@ -40,7 +40,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
   batched_dai_to_flush(
     domain: BigNumberish,
     options?: { blockIdentifier?: BlockIdentifier }
-  ): Promise<[BigNumberish] & { res: BigNumberish }>;
+  ): Promise<[Uint256] & { res: Uint256 }>;
   wards(
     user: BigNumberish,
     options?: { blockIdentifier?: BlockIdentifier }
@@ -103,7 +103,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     batched_dai_to_flush(
       domain: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
-    ): Promise<[BigNumberish] & { res: BigNumberish }>;
+    ): Promise<[Uint256] & { res: Uint256 }>;
     wards(
       user: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
@@ -167,7 +167,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     batched_dai_to_flush(
       domain: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
-    ): Promise<[BigNumberish] & { res: BigNumberish }>;
+    ): Promise<[Uint256] & { res: Uint256 }>;
     wards(
       user: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
@@ -206,7 +206,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     flush(
       target_domain: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
-    ): Promise<[BigNumberish] & { res: BigNumberish }>;
+    ): Promise<[Uint256] & { res: Uint256 }>;
   };
   populateTransaction: {
     nonce(options?: { blockIdentifier?: BlockIdentifier }): Invocation;
