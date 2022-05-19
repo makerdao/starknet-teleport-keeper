@@ -169,8 +169,8 @@ const _abi = [
           },
         ],
         indexed: false,
-        internalType: "struct WormholeGUID",
-        name: "wormholeGUID",
+        internalType: "struct TeleportGUID",
+        name: "teleportGUID",
         type: "tuple",
       },
       {
@@ -249,8 +249,8 @@ const _abi = [
           },
         ],
         indexed: false,
-        internalType: "struct WormholeGUID",
-        name: "wormholeGUID",
+        internalType: "struct TeleportGUID",
+        name: "teleportGUID",
         type: "tuple",
       },
     ],
@@ -541,8 +541,8 @@ const _abi = [
             type: "uint48",
           },
         ],
-        internalType: "struct WormholeGUID",
-        name: "wormholeGUID",
+        internalType: "struct TeleportGUID",
+        name: "teleportGUID",
         type: "tuple",
       },
       {
@@ -625,8 +625,8 @@ const _abi = [
             type: "uint48",
           },
         ],
-        internalType: "struct WormholeGUID",
-        name: "wormholeGUID",
+        internalType: "struct TeleportGUID",
+        name: "teleportGUID",
         type: "tuple",
       },
       {
@@ -727,7 +727,7 @@ const _abi = [
         type: "bytes32",
       },
     ],
-    name: "wormholes",
+    name: "teleports",
     outputs: [
       {
         internalType: "bool",

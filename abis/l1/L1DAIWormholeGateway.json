@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "L1DAIWormholeGateway",
-  "sourceName": "contracts/l1/L1DAIWormholeGateway.sol",
+  "contractName": "L1DAITeleportGateway",
+  "sourceName": "contracts/l1/L1DAITeleportGateway.sol",
   "abi": [
     {
       "inputs": [
@@ -17,7 +17,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "_l2DaiWormholeGateway",
+          "name": "_l2DaiTeleportGateway",
           "type": "uint256"
         },
         {
@@ -27,7 +27,7 @@
         },
         {
           "internalType": "address",
-          "name": "_wormholeRouter",
+          "name": "_teleportRouter",
           "type": "address"
         }
       ],
@@ -118,19 +118,19 @@
               "type": "uint48"
             }
           ],
-          "internalType": "struct WormholeGUID",
-          "name": "wormhole",
+          "internalType": "struct TeleportGUID",
+          "name": "teleport",
           "type": "tuple"
         }
       ],
-      "name": "finalizeRegisterWormhole",
+      "name": "finalizeRegisterTeleport",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "l2DaiWormholeGateway",
+      "name": "l2DaiTeleportGateway",
       "outputs": [
         {
           "internalType": "uint256",
@@ -156,10 +156,10 @@
     },
     {
       "inputs": [],
-      "name": "wormholeRouter",
+      "name": "teleportRouter",
       "outputs": [
         {
-          "internalType": "contract WormholeRouter",
+          "internalType": "contract TeleportRouter",
           "name": "",
           "type": "address"
         }

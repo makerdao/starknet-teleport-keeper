@@ -1,5 +1,5 @@
 {
-  "contractName": "WormholeJoin",
+  "contractName": "TeleportJoin",
   "abi": [
     {
       "inputs": [
@@ -157,8 +157,8 @@
             }
           ],
           "indexed": false,
-          "internalType": "struct WormholeGUID",
-          "name": "wormholeGUID",
+          "internalType": "struct TeleportGUID",
+          "name": "teleportGUID",
           "type": "tuple"
         },
         {
@@ -237,8 +237,8 @@
             }
           ],
           "indexed": false,
-          "internalType": "struct WormholeGUID",
-          "name": "wormholeGUID",
+          "internalType": "struct TeleportGUID",
+          "name": "teleportGUID",
           "type": "tuple"
         }
       ],
@@ -529,8 +529,8 @@
               "type": "uint48"
             }
           ],
-          "internalType": "struct WormholeGUID",
-          "name": "wormholeGUID",
+          "internalType": "struct TeleportGUID",
+          "name": "teleportGUID",
           "type": "tuple"
         },
         {
@@ -613,8 +613,8 @@
               "type": "uint48"
             }
           ],
-          "internalType": "struct WormholeGUID",
-          "name": "wormholeGUID",
+          "internalType": "struct TeleportGUID",
+          "name": "teleportGUID",
           "type": "tuple"
         },
         {
@@ -715,7 +715,7 @@
           "type": "bytes32"
         }
       ],
-      "name": "wormholes",
+      "name": "teleports",
       "outputs": [
         {
           "internalType": "bool",

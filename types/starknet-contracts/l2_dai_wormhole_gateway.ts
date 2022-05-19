@@ -4,7 +4,6 @@
 
 import type {
   ContractInterface,
-  Contract,
   Overrides,
   AddTransactionResponse,
   Invocation,
@@ -17,7 +16,7 @@ export type Uint256 = {
   low: BigNumberish;
   high: BigNumberish;
 };
-export interface l2_dai_wormhole_gateway extends Contract {
+export interface l2_dai_wormhole_gateway extends ContractInterface {
   nonce(options?: {
     blockIdentifier?: BlockIdentifier;
   }): Promise<[BigNumberish] & { res: BigNumberish }>;
@@ -27,7 +26,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
   dai(options?: {
     blockIdentifier?: BlockIdentifier;
   }): Promise<[BigNumberish] & { res: BigNumberish }>;
-  wormhole_gateway(options?: {
+  teleport_gateway(options?: {
     blockIdentifier?: BlockIdentifier;
   }): Promise<[BigNumberish] & { res: BigNumberish }>;
   domain(options?: {
@@ -40,7 +39,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
   batched_dai_to_flush(
     domain: BigNumberish,
     options?: { blockIdentifier?: BlockIdentifier }
-  ): Promise<[Uint256] & { res: Uint256 }>;
+  ): Promise<[BigNumberish] & { res: BigNumberish }>;
   wards(
     user: BigNumberish,
     options?: { blockIdentifier?: BlockIdentifier }
@@ -60,14 +59,14 @@ export interface l2_dai_wormhole_gateway extends Contract {
     data: BigNumberish,
     options?: Overrides
   ): Promise<AddTransactionResponse>;
-  initiate_wormhole(
+  initiate_teleport(
     target_domain: BigNumberish,
     receiver: BigNumberish,
     amount: BigNumberish,
     operator: BigNumberish,
     options?: Overrides
   ): Promise<AddTransactionResponse>;
-  finalize_register_wormhole(
+  finalize_register_teleport(
     target_domain: BigNumberish,
     receiver: BigNumberish,
     amount: BigNumberish,
@@ -90,7 +89,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     dai(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Promise<[BigNumberish] & { res: BigNumberish }>;
-    wormhole_gateway(options?: {
+    teleport_gateway(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Promise<[BigNumberish] & { res: BigNumberish }>;
     domain(options?: {
@@ -103,7 +102,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     batched_dai_to_flush(
       domain: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
-    ): Promise<[Uint256] & { res: Uint256 }>;
+    ): Promise<[BigNumberish] & { res: BigNumberish }>;
     wards(
       user: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
@@ -123,14 +122,14 @@ export interface l2_dai_wormhole_gateway extends Contract {
       data: BigNumberish,
       options?: Overrides
     ): Promise<AddTransactionResponse>;
-    initiate_wormhole(
+    initiate_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
       operator: BigNumberish,
       options?: Overrides
     ): Promise<AddTransactionResponse>;
-    finalize_register_wormhole(
+    finalize_register_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
@@ -154,7 +153,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     dai(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Promise<[BigNumberish] & { res: BigNumberish }>;
-    wormhole_gateway(options?: {
+    teleport_gateway(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Promise<[BigNumberish] & { res: BigNumberish }>;
     domain(options?: {
@@ -167,7 +166,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     batched_dai_to_flush(
       domain: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
-    ): Promise<[Uint256] & { res: Uint256 }>;
+    ): Promise<[BigNumberish] & { res: BigNumberish }>;
     wards(
       user: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
@@ -187,14 +186,14 @@ export interface l2_dai_wormhole_gateway extends Contract {
       data: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
     ): Promise<[] & {}>;
-    initiate_wormhole(
+    initiate_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
       operator: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
     ): Promise<[] & {}>;
-    finalize_register_wormhole(
+    finalize_register_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
@@ -206,13 +205,13 @@ export interface l2_dai_wormhole_gateway extends Contract {
     flush(
       target_domain: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
-    ): Promise<[Uint256] & { res: Uint256 }>;
+    ): Promise<[BigNumberish] & { res: BigNumberish }>;
   };
   populateTransaction: {
     nonce(options?: { blockIdentifier?: BlockIdentifier }): Invocation;
     is_open(options?: { blockIdentifier?: BlockIdentifier }): Invocation;
     dai(options?: { blockIdentifier?: BlockIdentifier }): Invocation;
-    wormhole_gateway(options?: {
+    teleport_gateway(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Invocation;
     domain(options?: { blockIdentifier?: BlockIdentifier }): Invocation;
@@ -237,14 +236,14 @@ export interface l2_dai_wormhole_gateway extends Contract {
       data: BigNumberish,
       options?: Overrides
     ): Invocation;
-    initiate_wormhole(
+    initiate_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
       operator: BigNumberish,
       options?: Overrides
     ): Invocation;
-    finalize_register_wormhole(
+    finalize_register_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
@@ -265,7 +264,7 @@ export interface l2_dai_wormhole_gateway extends Contract {
     dai(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Promise<EstimateFeeResponse>;
-    wormhole_gateway(options?: {
+    teleport_gateway(options?: {
       blockIdentifier?: BlockIdentifier;
     }): Promise<EstimateFeeResponse>;
     domain(options?: {
@@ -300,14 +299,14 @@ export interface l2_dai_wormhole_gateway extends Contract {
       data: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
     ): Promise<EstimateFeeResponse>;
-    initiate_wormhole(
+    initiate_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,
       operator: BigNumberish,
       options?: { blockIdentifier?: BlockIdentifier }
     ): Promise<EstimateFeeResponse>;
-    finalize_register_wormhole(
+    finalize_register_teleport(
       target_domain: BigNumberish,
       receiver: BigNumberish,
       amount: BigNumberish,

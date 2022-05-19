@@ -26,7 +26,7 @@ import type {
   OnEvent,
 } from "./common";
 
-export type WormholeGUIDStruct = {
+export type TeleportGUIDStruct = {
   sourceDomain: BytesLike;
   targetDomain: BytesLike;
   receiver: BytesLike;
@@ -36,7 +36,7 @@ export type WormholeGUIDStruct = {
   timestamp: BigNumberish;
 };
 
-export type WormholeGUIDStructOutput = [
+export type TeleportGUIDStructOutput = [
   string,
   string,
   string,
@@ -76,7 +76,7 @@ export interface WormholeJoinInterface extends utils.Interface {
     "vat()": FunctionFragment;
     "vow()": FunctionFragment;
     "wards(address)": FunctionFragment;
-    "wormholes(bytes32)": FunctionFragment;
+    "teleports(bytes32)": FunctionFragment;
   };
 
   getFunction(
@@ -101,7 +101,7 @@ export interface WormholeJoinInterface extends utils.Interface {
       | "vat"
       | "vow"
       | "wards"
-      | "wormholes"
+      | "teleports"
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "RAY", values?: undefined): string;
@@ -128,12 +128,12 @@ export interface WormholeJoinInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "line", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "mintPending",
-    values: [WormholeGUIDStruct, BigNumberish, BigNumberish]
+    values: [TeleportGUIDStruct, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "rely", values: [string]): string;
   encodeFunctionData(
     functionFragment: "requestMint",
-    values: [WormholeGUIDStruct, BigNumberish, BigNumberish]
+    values: [TeleportGUIDStruct, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "settle",
@@ -143,7 +143,7 @@ export interface WormholeJoinInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "vow", values?: undefined): string;
   encodeFunctionData(functionFragment: "wards", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "wormholes",
+    functionFragment: "teleports",
     values: [BytesLike]
   ): string;
 
@@ -182,7 +182,7 @@ export interface WormholeJoinInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "vat", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "vow", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "wards", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "wormholes", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "teleports", data: BytesLike): Result;
 
   events: {
     "Deny(address)": EventFragment;
@@ -256,14 +256,14 @@ export type File_bytes32_bytes32_uint256_EventFilter =
 
 export interface MintEventObject {
   hashGUID: string;
-  wormholeGUID: WormholeGUIDStructOutput;
+  teleportGUID: TeleportGUIDStructOutput;
   amount: BigNumber;
   maxFeePercentage: BigNumber;
   operatorFee: BigNumber;
   originator: string;
 }
 export type MintEvent = TypedEvent<
-  [string, WormholeGUIDStructOutput, BigNumber, BigNumber, BigNumber, string],
+  [string, TeleportGUIDStructOutput, BigNumber, BigNumber, BigNumber, string],
   MintEventObject
 >;
 
@@ -271,10 +271,10 @@ export type MintEventFilter = TypedEventFilter<MintEvent>;
 
 export interface RegisterEventObject {
   hashGUID: string;
-  wormholeGUID: WormholeGUIDStructOutput;
+  teleportGUID: TeleportGUIDStructOutput;
 }
 export type RegisterEvent = TypedEvent<
-  [string, WormholeGUIDStructOutput],
+  [string, TeleportGUIDStructOutput],
   RegisterEventObject
 >;
 
@@ -368,7 +368,7 @@ export interface WormholeJoin extends BaseContract {
     line(arg0: BytesLike, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     mintPending(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -380,7 +380,7 @@ export interface WormholeJoin extends BaseContract {
     ): Promise<ContractTransaction>;
 
     requestMint(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -398,7 +398,7 @@ export interface WormholeJoin extends BaseContract {
 
     wards(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    wormholes(
+    teleports(
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean, BigNumber] & { blessed: boolean; pending: BigNumber }>;
@@ -448,7 +448,7 @@ export interface WormholeJoin extends BaseContract {
   line(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
   mintPending(
-    wormholeGUID: WormholeGUIDStruct,
+    teleportGUID: TeleportGUIDStruct,
     maxFeePercentage: BigNumberish,
     operatorFee: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -460,7 +460,7 @@ export interface WormholeJoin extends BaseContract {
   ): Promise<ContractTransaction>;
 
   requestMint(
-    wormholeGUID: WormholeGUIDStruct,
+    teleportGUID: TeleportGUIDStruct,
     maxFeePercentage: BigNumberish,
     operatorFee: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -478,7 +478,7 @@ export interface WormholeJoin extends BaseContract {
 
   wards(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  wormholes(
+  teleports(
     arg0: BytesLike,
     overrides?: CallOverrides
   ): Promise<[boolean, BigNumber] & { blessed: boolean; pending: BigNumber }>;
@@ -525,7 +525,7 @@ export interface WormholeJoin extends BaseContract {
     line(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
     mintPending(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: CallOverrides
@@ -536,7 +536,7 @@ export interface WormholeJoin extends BaseContract {
     rely(usr: string, overrides?: CallOverrides): Promise<void>;
 
     requestMint(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: CallOverrides
@@ -556,7 +556,7 @@ export interface WormholeJoin extends BaseContract {
 
     wards(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    wormholes(
+    teleports(
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean, BigNumber] & { blessed: boolean; pending: BigNumber }>;
@@ -583,7 +583,7 @@ export interface WormholeJoin extends BaseContract {
 
     "Mint(bytes32,tuple,uint256,uint256,uint256,address)"(
       hashGUID?: BytesLike | null,
-      wormholeGUID?: null,
+      teleportGUID?: null,
       amount?: null,
       maxFeePercentage?: null,
       operatorFee?: null,
@@ -591,7 +591,7 @@ export interface WormholeJoin extends BaseContract {
     ): MintEventFilter;
     Mint(
       hashGUID?: BytesLike | null,
-      wormholeGUID?: null,
+      teleportGUID?: null,
       amount?: null,
       maxFeePercentage?: null,
       operatorFee?: null,
@@ -600,11 +600,11 @@ export interface WormholeJoin extends BaseContract {
 
     "Register(bytes32,tuple)"(
       hashGUID?: BytesLike | null,
-      wormholeGUID?: null
+      teleportGUID?: null
     ): RegisterEventFilter;
     Register(
       hashGUID?: BytesLike | null,
-      wormholeGUID?: null
+      teleportGUID?: null
     ): RegisterEventFilter;
 
     "Rely(address)"(usr?: string | null): RelyEventFilter;
@@ -665,7 +665,7 @@ export interface WormholeJoin extends BaseContract {
     line(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
     mintPending(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -677,7 +677,7 @@ export interface WormholeJoin extends BaseContract {
     ): Promise<BigNumber>;
 
     requestMint(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -695,7 +695,7 @@ export interface WormholeJoin extends BaseContract {
 
     wards(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    wormholes(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+    teleports(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -752,7 +752,7 @@ export interface WormholeJoin extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     mintPending(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -764,7 +764,7 @@ export interface WormholeJoin extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     requestMint(
-      wormholeGUID: WormholeGUIDStruct,
+      teleportGUID: TeleportGUIDStruct,
       maxFeePercentage: BigNumberish,
       operatorFee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -785,7 +785,7 @@ export interface WormholeJoin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    wormholes(
+    teleports(
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

@@ -30,7 +30,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "_l2DaiWormholeGateway",
+        name: "_l2DaiTeleportGateway",
         type: "uint256",
       },
       {
@@ -40,7 +40,7 @@ const _abi = [
       },
       {
         internalType: "address",
-        name: "_wormholeRouter",
+        name: "_teleportRouter",
         type: "address",
       },
     ],
@@ -131,19 +131,19 @@ const _abi = [
             type: "uint48",
           },
         ],
-        internalType: "struct WormholeGUID",
-        name: "wormhole",
+        internalType: "struct TeleportGUID",
+        name: "teleport",
         type: "tuple",
       },
     ],
-    name: "finalizeRegisterWormhole",
+    name: "finalizeRegisterTeleport",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [],
-    name: "l2DaiWormholeGateway",
+    name: "l2DaiTeleportGateway",
     outputs: [
       {
         internalType: "uint256",
@@ -169,10 +169,10 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "wormholeRouter",
+    name: "teleportRouter",
     outputs: [
       {
-        internalType: "contract WormholeRouter",
+        internalType: "contract TeleportRouter",
         name: "",
         type: "address",
       },
@@ -205,34 +205,34 @@ export class L1DAIWormholeGateway__factory extends ContractFactory {
   override deploy(
     _starkNet: string,
     _dai: string,
-    _l2DaiWormholeGateway: BigNumberish,
+    _l2DaiTeleportGateway: BigNumberish,
     _escrow: string,
-    _wormholeRouter: string,
+    _teleportRouter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<L1DAIWormholeGateway> {
     return super.deploy(
       _starkNet,
       _dai,
-      _l2DaiWormholeGateway,
+      _l2DaiTeleportGateway,
       _escrow,
-      _wormholeRouter,
+      _teleportRouter,
       overrides || {}
     ) as Promise<L1DAIWormholeGateway>;
   }
   override getDeployTransaction(
     _starkNet: string,
     _dai: string,
-    _l2DaiWormholeGateway: BigNumberish,
+    _l2DaiTeleportGateway: BigNumberish,
     _escrow: string,
-    _wormholeRouter: string,
+    _teleportRouter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): TransactionRequest {
     return super.getDeployTransaction(
       _starkNet,
       _dai,
-      _l2DaiWormholeGateway,
+      _l2DaiTeleportGateway,
       _escrow,
-      _wormholeRouter,
+      _teleportRouter,
       overrides || {}
     );
   }

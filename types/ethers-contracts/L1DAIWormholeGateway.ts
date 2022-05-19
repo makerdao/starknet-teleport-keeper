@@ -22,7 +22,7 @@ import type {
   OnEvent,
 } from "./common";
 
-export type WormholeGUIDStruct = {
+export type TeleportGUIDStruct = {
   sourceDomain: BytesLike;
   targetDomain: BytesLike;
   receiver: BytesLike;
@@ -32,7 +32,7 @@ export type WormholeGUIDStruct = {
   timestamp: BigNumberish;
 };
 
-export type WormholeGUIDStructOutput = [
+export type TeleportGUIDStructOutput = [
   string,
   string,
   string,
@@ -55,10 +55,10 @@ export interface L1DAIWormholeGatewayInterface extends utils.Interface {
     "dai()": FunctionFragment;
     "escrow()": FunctionFragment;
     "finalizeFlush(bytes32,uint256)": FunctionFragment;
-    "finalizeRegisterWormhole((bytes32,bytes32,bytes32,bytes32,uint128,uint80,uint48))": FunctionFragment;
-    "l2DaiWormholeGateway()": FunctionFragment;
+    "finalizeRegisterTeleport((bytes32,bytes32,bytes32,bytes32,uint128,uint80,uint48))": FunctionFragment;
+    "l2DaiTeleportGateway()": FunctionFragment;
     "starkNet()": FunctionFragment;
-    "wormholeRouter()": FunctionFragment;
+    "teleportRouter()": FunctionFragment;
   };
 
   getFunction(
@@ -66,10 +66,10 @@ export interface L1DAIWormholeGatewayInterface extends utils.Interface {
       | "dai"
       | "escrow"
       | "finalizeFlush"
-      | "finalizeRegisterWormhole"
-      | "l2DaiWormholeGateway"
+      | "finalizeRegisterTeleport"
+      | "l2DaiTeleportGateway"
       | "starkNet"
-      | "wormholeRouter"
+      | "teleportRouter"
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "dai", values?: undefined): string;
@@ -79,16 +79,16 @@ export interface L1DAIWormholeGatewayInterface extends utils.Interface {
     values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "finalizeRegisterWormhole",
-    values: [WormholeGUIDStruct]
+    functionFragment: "finalizeRegisterTeleport",
+    values: [TeleportGUIDStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "l2DaiWormholeGateway",
+    functionFragment: "l2DaiTeleportGateway",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "starkNet", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "wormholeRouter",
+    functionFragment: "teleportRouter",
     values?: undefined
   ): string;
 
@@ -99,16 +99,16 @@ export interface L1DAIWormholeGatewayInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "finalizeRegisterWormhole",
+    functionFragment: "finalizeRegisterTeleport",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "l2DaiWormholeGateway",
+    functionFragment: "l2DaiTeleportGateway",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "starkNet", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "wormholeRouter",
+    functionFragment: "teleportRouter",
     data: BytesLike
   ): Result;
 
@@ -152,16 +152,16 @@ export interface L1DAIWormholeGateway extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    finalizeRegisterWormhole(
-      wormhole: WormholeGUIDStruct,
+    finalizeRegisterTeleport(
+      teleport: TeleportGUIDStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    l2DaiWormholeGateway(overrides?: CallOverrides): Promise<[BigNumber]>;
+    l2DaiTeleportGateway(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     starkNet(overrides?: CallOverrides): Promise<[string]>;
 
-    wormholeRouter(overrides?: CallOverrides): Promise<[string]>;
+    teleportRouter(overrides?: CallOverrides): Promise<[string]>;
   };
 
   dai(overrides?: CallOverrides): Promise<string>;
@@ -174,16 +174,16 @@ export interface L1DAIWormholeGateway extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  finalizeRegisterWormhole(
-    wormhole: WormholeGUIDStruct,
+  finalizeRegisterTeleport(
+    teleport: TeleportGUIDStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  l2DaiWormholeGateway(overrides?: CallOverrides): Promise<BigNumber>;
+  l2DaiTeleportGateway(overrides?: CallOverrides): Promise<BigNumber>;
 
   starkNet(overrides?: CallOverrides): Promise<string>;
 
-  wormholeRouter(overrides?: CallOverrides): Promise<string>;
+  teleportRouter(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     dai(overrides?: CallOverrides): Promise<string>;
@@ -196,16 +196,16 @@ export interface L1DAIWormholeGateway extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    finalizeRegisterWormhole(
-      wormhole: WormholeGUIDStruct,
+    finalizeRegisterTeleport(
+      teleport: TeleportGUIDStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    l2DaiWormholeGateway(overrides?: CallOverrides): Promise<BigNumber>;
+    l2DaiTeleportGateway(overrides?: CallOverrides): Promise<BigNumber>;
 
     starkNet(overrides?: CallOverrides): Promise<string>;
 
-    wormholeRouter(overrides?: CallOverrides): Promise<string>;
+    teleportRouter(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
@@ -221,16 +221,16 @@ export interface L1DAIWormholeGateway extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    finalizeRegisterWormhole(
-      wormhole: WormholeGUIDStruct,
+    finalizeRegisterTeleport(
+      teleport: TeleportGUIDStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    l2DaiWormholeGateway(overrides?: CallOverrides): Promise<BigNumber>;
+    l2DaiTeleportGateway(overrides?: CallOverrides): Promise<BigNumber>;
 
     starkNet(overrides?: CallOverrides): Promise<BigNumber>;
 
-    wormholeRouter(overrides?: CallOverrides): Promise<BigNumber>;
+    teleportRouter(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -244,17 +244,17 @@ export interface L1DAIWormholeGateway extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    finalizeRegisterWormhole(
-      wormhole: WormholeGUIDStruct,
+    finalizeRegisterTeleport(
+      teleport: TeleportGUIDStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    l2DaiWormholeGateway(
+    l2DaiTeleportGateway(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     starkNet(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    wormholeRouter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    teleportRouter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

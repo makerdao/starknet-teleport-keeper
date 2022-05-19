@@ -3,11 +3,11 @@ import * as starknet from "starknet";
 const { genKeyPair, getStarkKey } = starknet.ec;
 import { isEqual } from "lodash";
 import {
-  L1DAIWormholeGateway,
+  L1DAITeleportGateway,
   Starknet,
-  WormholeJoin,
+  TeleportJoin,
 } from "types/ethers-contracts";
-import { l2_dai_wormhole_gateway } from "types/starknet-contracts/l2_dai_wormhole_gateway";
+import { l2_dai_teleport_gateway } from "types/starknet-contracts/l2_dai_teleport_gateway";
 
 import {
   cairoShortStringToBytes32,
@@ -32,42 +32,42 @@ async function flush(targetDomain: string) {
   const l1Signer = getL1Signer(NETWORK, ENV);
   const l2Signer = getL2Signer(NETWORK, ENV);
 
-  const l1WormholeGatewayAddress = getRequiredEnv(
+  const l1TeleportGatewayAddress = getRequiredEnv(
     `${NETWORK}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`
   );
-  const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(
+  const l1TeleportGateway = await getL1ContractAt<L1DAITeleportGateway>(
     l1Signer,
-    "L1DAIWormholeGateway",
-    l1WormholeGatewayAddress
+    "L1DAITeleportGateway",
+    l1TeleportGatewayAddress
   );
 
-  const l2WormholeGatewayAddress = getRequiredEnv(
+  const l2TeleportGatewayAddress = getRequiredEnv(
     `${NETWORK}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`
   );
-  const l2WormholeGateway = await getL2ContractAt<l2_dai_wormhole_gateway>(
+  const l2TeleportGateway = await getL2ContractAt<l2_dai_teleport_gateway>(
     l2Signer,
-    "l2_dai_wormhole_gateway",
-    l2WormholeGatewayAddress
+    "l2_dai_teleport_gateway",
+    l2TeleportGatewayAddress
   );
 
   const encodedDomain = l2String(targetDomain);
   async function recentFlushTimestamp(): Promise<number> {
-    const wormholeJoinAddress = getRequiredEnv(
+    const teleportJoinAddress = getRequiredEnv(
       `${NETWORK}_WORMHOLE_JOIN_ADDRESS`
     );
-    const wormholeJoin = await getL1ContractAt<WormholeJoin>(
+    const teleportJoin = await getL1ContractAt<TeleportJoin>(
       l1Signer,
-      "WormholeJoin",
-      wormholeJoinAddress
+      "TeleportJoin",
+      teleportJoinAddress
     );
-    const settleFilter = wormholeJoin.filters.Settle(l1String(SOURCE_DOMAIN));
-    const settleEvents = await wormholeJoin.queryFilter(settleFilter, START_BLOCK);
+    const settleFilter = teleportJoin.filters.Settle(l1String(SOURCE_DOMAIN));
+    const settleEvents = await teleportJoin.queryFilter(settleFilter, START_BLOCK);
     const recentEvent = settleEvents[settleEvents.length - 1];
     const block = await recentEvent.getBlock();
     return block.timestamp;
   }
   const lastFlushTimestamp = await recentFlushTimestamp();
-  const [daiToFlushSplit] = await l2WormholeGateway.batched_dai_to_flush(
+  const [daiToFlushSplit] = await l2TeleportGateway.batched_dai_to_flush(
     encodedDomain
   );
   const daiToFlush = toUint(daiToFlushSplit);
@@ -75,7 +75,7 @@ async function flush(targetDomain: string) {
 
   if (daiToFlush > 0 && (Date.now() > lastFlushTimestamp + FLUSH_DELAY)) {
     console.log("Sending `flush` transaction");
-    const { transaction_hash } = await l2WormholeGateway.flush(encodedDomain, { maxFee: "0" });
+    const { transaction_hash } = await l2TeleportGateway.flush(encodedDomain, { maxFee: "0" });
     await l2Signer.waitForTransaction(transaction_hash);
     console.log("Success");
   }
@@ -85,22 +85,22 @@ async function finalizeFlush(targetDomain: string) {
   const l1Signer = getL1Signer(NETWORK, ENV);
   const l2Signer = getL2Signer(NETWORK, ENV);
 
-  const l1WormholeGatewayAddress = getRequiredEnv(
+  const l1TeleportGatewayAddress = getRequiredEnv(
     `${NETWORK}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`
   );
-  const l2WormholeGatewayAddress = getRequiredEnv(
+  const l2TeleportGatewayAddress = getRequiredEnv(
     `${NETWORK}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`
   );
   const starknetAddress = getRequiredEnv(`${NETWORK}_STARKNET_ADDRESS`);
-  const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(
+  const l1TeleportGateway = await getL1ContractAt<L1DAITeleportGateway>(
     l1Signer,
-    "L1DAIWormholeGateway",
-    l1WormholeGatewayAddress
+    "L1DAITeleportGateway",
+    l1TeleportGatewayAddress
   );
-  const l2WormholeGateway = await getL2ContractAt<l2_dai_wormhole_gateway>(
+  const l2TeleportGateway = await getL2ContractAt<l2_dai_teleport_gateway>(
     l2Signer,
-    "l2_dai_wormhole_gateway",
-    l2WormholeGatewayAddress
+    "l2_dai_teleport_gateway",
+    l2TeleportGatewayAddress
   );
 
   const starknet = await getL1ContractAt<Starknet>(
@@ -111,13 +111,13 @@ async function finalizeFlush(targetDomain: string) {
     
   const flushes = await flushesToBeFinalized(
     l1Signer,
-    l1WormholeGatewayAddress,
-    l2WormholeGatewayAddress,
+    l1TeleportGatewayAddress,
+    l2TeleportGatewayAddress,
     starknet
   );
   flushes.forEach(async (flush: Event) => {
     console.log("Sending `finalizeFlush` transaction");
-    const tx = await l1WormholeGateway.finalizeFlush(
+    const tx = await l1TeleportGateway.finalizeFlush(
       cairoShortStringToBytes32(flush.args.payload[1]),
       flush.args.payload[2]
     );
@@ -128,24 +128,24 @@ async function finalizeFlush(targetDomain: string) {
 
 async function flushesToBeFinalized(
   l1Signer: Signer,
-  l1WormholeGatewayAddress: string,
-  l2WormholeGatewayAddress: string,
+  l1TeleportGatewayAddress: string,
+  l2TeleportGatewayAddress: string,
   starknet: Starknet
 ): Promise<Event[]> {
   async function getSettleMessageEvents(): Promise<Event[]> {
-    const wormholeJoinAddress = getRequiredEnv(
+    const teleportJoinAddress = getRequiredEnv(
       `${NETWORK}_WORMHOLE_JOIN_ADDRESS`
     );
-    const wormholeJoin = await getL1ContractAt<WormholeJoin>(
+    const teleportJoin = await getL1ContractAt<TeleportJoin>(
       l1Signer,
-      "WormholeJoin",
-      wormholeJoinAddress
+      "TeleportJoin",
+      teleportJoinAddress
     );
     const logMessageFilter = starknet.filters.LogMessageToL1(
-      l2WormholeGatewayAddress,
-      l1WormholeGatewayAddress
+      l2TeleportGatewayAddress,
+      l1TeleportGatewayAddress
     );
-    const settleFilter = wormholeJoin.filters.Settle();
+    const settleFilter = teleportJoin.filters.Settle();
     const settleEvents = await starknet.queryFilter(settleFilter, START_BLOCK);
     return starknet.queryFilter(
       logMessageFilter,
@@ -155,8 +155,8 @@ async function flushesToBeFinalized(
 
   async function getConsumedSettleMessageEvents(event: Event): Promise<Event[]> {
     const consumedMessageFilter = starknet.filters.ConsumedMessageToL1(
-      l2WormholeGatewayAddress,
-      l1WormholeGatewayAddress
+      l2TeleportGatewayAddress,
+      l1TeleportGatewayAddress
     );
     return (
       await starknet.queryFilter(consumedMessageFilter, event.blockNumber)
