@@ -1,11 +1,10 @@
-import * as dotenv from "dotenv";
-import dotenvExpand from "dotenv-expand";
 import { BigNumber, Contract, ContractFactory, ethers, Signer } from "ethers";
 import fs from "fs";
 import * as starknet from "starknet";
 import { assert } from "ts-essentials";
-const env = dotenv.config();
-dotenvExpand.expand(env);
+import * as dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
+import path from "path";
 
 export function toUint(splitUint: object): bigint {
   const _a = Object.values(splitUint);
@@ -31,26 +30,50 @@ export function getRequiredEnv(key: string): string {
   return value;
 }
 
-function getProviderUrls(network: string, env: string): {
-  ethereum: string;
-  starknet: string;
-} {
-  if (network === "LOCALHOST" || env === "DEV") {
-    return {
-      ethereum: "http://localhost:8545",
-      starknet: "http://localhost:5000",
-    };
-  } else if (network === "MAINNET") {
-    return {
-      ethereum: getRequiredEnv("ALPHA_MAINNET_ETHEREUM_PROVIDER_URL"),
-      starknet: getRequiredEnv("ALPHA_MAINNET_STARKNET_PROVIDER_URL"),
-    };
-  } else if (network === "GOERLI") {
-    return {
-      ethereum: getRequiredEnv("ALPHA_GOERLI_ETHEREUM_PROVIDER_URL"),
-      starknet: getRequiredEnv("ALPHA_GOERLI_STARKNET_PROVIDER_URL"),
-    };
+export function getConfig() {
+  const localEnv = dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+  dotenvExpand.expand(localEnv);
+  if (process.env.NODE_ENV === "dev") {
+    const forkEnv = dotenv.config({ path: path.resolve(process.cwd(), ".env.fork") });
+    dotenvExpand.expand(forkEnv);
   }
+  const env = dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+  dotenvExpand.expand(env);
+
+  const network = getRequiredEnv("NETWORK").replace("-", "_").toUpperCase();
+  return {
+    network,
+    sourceDomain: `${network.split("_")[1]}-SLAVE-STARKNET-1`,
+    flushDelay: parseInt(getRequiredEnv("FLUSH_DELAY")),
+    ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
+    starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
+    l1WormholeGatewayAddress: getRequiredEnv(`${network}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`),
+    l2WormholeGatewayAddress: getRequiredEnv(`${network}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`),
+    wormholeJoinAddress: getRequiredEnv(`${network}_WORMHOLE_JOIN_ADDRESS`),
+    starknetAddress: getRequiredEnv(`${network}_STARKNET_ADDRESS`),
+    l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
+    l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),
+    l2PrivateKey: getRequiredEnv(`${network}_L2_PRIVATE_KEY`),
+  };
+}
+
+export function getL1Signer({ ethereumProviderUrl, l1PrivateKey }: ReturnType<typeof getConfig>): Signer {
+  const provider = ethers.getDefaultProvider(ethereumProviderUrl);
+  return new ethers.Wallet(l1PrivateKey, provider);
+}
+
+export function getL2Signer({ starknetProviderUrl, l2AccountAddress, l2PrivateKey }: ReturnType<typeof getConfig>): starknet.Account {
+  const provider = new starknet.Provider({
+    baseUrl: starknetProviderUrl,
+    feederGatewayUrl: "feeder_gateway",
+    gatewayUrl: "gateway",
+  });
+  const starkKeyPair = starknet.ec.getKeyPair(l2PrivateKey);
+  const starkKeyPub = starknet.ec.getStarkKey(starkKeyPair);
+  const compiledArgentAccount = JSON.parse(
+    fs.readFileSync("./abis/l2/ArgentAccount.json").toString("ascii")
+  );
+  return new starknet.Account(provider, l2AccountAddress, starkKeyPair);
 }
 
 export async function getL1ContractAt<C extends Contract>(
@@ -84,26 +107,17 @@ export async function getL2ContractAt<C extends starknet.Contract>(
   return contractFactory.attach(address) as C;
 }
 
-export function getL1Signer(network: string, env: string): Signer {
-  const { ethereum: providerUrl } = getProviderUrls(network, env);
-  const provider = ethers.getDefaultProvider(providerUrl);
-  const privateKey = getRequiredEnv(`${network}_L1_PRIVATE_KEY`);
-  return new ethers.Wallet(privateKey, provider);
-}
+export async function findNearestBlock(
+  provider: ethers.providers.Provider,
+  desiredTimestamp: number
+): Promise<number> {
+  let currentBlockNumber = (await provider.getBlock('latest')).number;
+  let currentBlock = await provider.getBlock(currentBlockNumber);
 
-export function getL2Signer(network: string, env: string): starknet.Account {
-  const { starknet: providerUrl } = getProviderUrls(network, env);
-  const provider = new starknet.Provider({
-    baseUrl: providerUrl,
-    feederGatewayUrl: "feeder_gateway",
-    gatewayUrl: "gateway",
-  });
-  const address = getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`);
-  const l2PrivateKey = getRequiredEnv(`${network}_L2_PRIVATE_KEY`);
-  const starkKeyPair = starknet.ec.getKeyPair(l2PrivateKey);
-  const starkKeyPub = starknet.ec.getStarkKey(starkKeyPair);
-  const compiledArgentAccount = JSON.parse(
-    fs.readFileSync("./abis/l2/ArgentAccount.json").toString("ascii")
-  );
-  return new starknet.Account(provider, address, starkKeyPair);
+  while (currentBlockNumber > 0 && currentBlock.timestamp > desiredTimestamp) {
+    currentBlockNumber -= 30000;
+    currentBlock = await provider.getBlock(currentBlockNumber);
+  }
+
+  return currentBlock.number;
 }
