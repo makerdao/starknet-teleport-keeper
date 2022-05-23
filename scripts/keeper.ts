@@ -94,9 +94,8 @@ async function finalizeFlush(targetDomain: string) {
     
   const flushes = await flushesToBeFinalized(
     l1Signer,
-    config.l1WormholeGatewayAddress,
-    config.l2WormholeGatewayAddress,
-    starknet
+    starknet,
+    config
   );
   flushes.forEach(async (flush: Event) => {
     console.log("Sending `finalizeFlush` transaction");
