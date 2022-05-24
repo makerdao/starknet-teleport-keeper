@@ -21,9 +21,7 @@ import {
   Config,
 } from "./utils";
 
-async function flush(targetDomain: string) {
-  const config = getConfig();
-
+export async function flush(config: Config, targetDomain: string) {
   const l1Signer = getL1Signer(config);
   const l2Signer = getL2Signer(config);
 
@@ -53,9 +51,7 @@ async function flush(targetDomain: string) {
   }
 }
 
-async function finalizeFlush() {
-  const config = getConfig();
-
+export async function finalizeFlush(config: Config) {
   const l1Signer = getL1Signer(config);
 
   const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(
@@ -150,10 +146,4 @@ async function flushesToBeFinalized(
       }
     })
   );
-}
-
-if (process.argv[2] === "flush") {
-  flush(process.argv[3]);
-} else if (process.argv[2] === "finalizeFlush") {
-  finalizeFlush();
 }
