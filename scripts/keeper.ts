@@ -1,6 +1,4 @@
 import { Event, Signer } from "ethers";
-import * as starknet from "starknet";
-const { genKeyPair, getStarkKey } = starknet.ec;
 import { isEqual } from "lodash";
 import {
   L1DAIWormholeGateway,
@@ -20,8 +18,8 @@ import {
   toUint,
   getConfig,
   findNearestBlock,
+  Config,
 } from "./utils";
-
 
 async function flush(targetDomain: string) {
   const config = getConfig();
@@ -29,83 +27,78 @@ async function flush(targetDomain: string) {
   const l1Signer = getL1Signer(config);
   const l2Signer = getL2Signer(config);
 
-  const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(
-    l1Signer,
-    "L1DAIWormholeGateway",
-    config.l1WormholeGatewayAddress
-  );
-
   const l2WormholeGateway = await getL2ContractAt<l2_dai_wormhole_gateway>(
     l2Signer,
     "l2_dai_wormhole_gateway",
     config.l2WormholeGatewayAddress
   );
 
-  const encodedDomain = l2String(targetDomain);
-  async function recentFlushTimestamp(): Promise<number> {
-    const wormholeJoin = await getL1ContractAt<WormholeJoin>(
-      l1Signer,
-      "WormholeJoin",
-      config.wormholeJoinAddress
-    );
-    const settleFilter = wormholeJoin.filters.Settle(l1String(config.sourceDomain));
-    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now());
-    const settleEvents = await wormholeJoin.queryFilter(settleFilter, nearestBlock);
-    const recentEvent = settleEvents[settleEvents.length - 1];
-    const block = await recentEvent.getBlock();
-    return block.timestamp;
-  }
-  const lastFlushTimestamp = await recentFlushTimestamp();
+  const encodedTargetDomain = l2String(targetDomain);
+
+  const lastFlushTimestamp = await recentFlushTimestamp(config, l1Signer);
   const [daiToFlushSplit] = await l2WormholeGateway.batched_dai_to_flush(
-    encodedDomain
+    encodedTargetDomain
   );
   const daiToFlush = toUint(daiToFlushSplit);
   console.log(`DAI to flush: ${daiToFlush}`);
 
-  if (daiToFlush > 0 && (Date.now() > lastFlushTimestamp + config.flushDelay)) {
+  if (daiToFlush > 0 && Date.now() > lastFlushTimestamp + config.flushDelay) {
     console.log("Sending `flush` transaction");
-    const { transaction_hash } = await l2WormholeGateway.flush(encodedDomain, { maxFee: "0" });
+    const { transaction_hash } = await l2WormholeGateway.flush(
+      encodedTargetDomain,
+      { maxFee: "0" }
+    );
     await l2Signer.waitForTransaction(transaction_hash);
     console.log("Success");
   }
 }
 
-async function finalizeFlush(targetDomain: string) {
+async function finalizeFlush() {
   const config = getConfig();
 
   const l1Signer = getL1Signer(config);
-  const l2Signer = getL2Signer(config);
 
   const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(
     l1Signer,
     "L1DAIWormholeGateway",
     config.l1WormholeGatewayAddress
-  );
-  const l2WormholeGateway = await getL2ContractAt<l2_dai_wormhole_gateway>(
-    l2Signer,
-    "l2_dai_wormhole_gateway",
-    config.l2WormholeGatewayAddress
   );
   const starknet = await getL1ContractAt<Starknet>(
     l1Signer,
     "Starknet",
     config.starknetAddress
   );
-    
-  const flushes = await flushesToBeFinalized(
-    l1Signer,
-    starknet,
-    config
-  );
+
+  const flushes = await flushesToBeFinalized(l1Signer, starknet, config);
   flushes.forEach(async (flush: Event) => {
     console.log("Sending `finalizeFlush` transaction");
     const tx = await l1WormholeGateway.finalizeFlush(
       cairoShortStringToBytes32(flush.args.payload[1]),
       flush.args.payload[2]
     );
-    const res = await tx.wait();
+    await tx.wait();
     console.log("Success");
   });
+}
+
+async function recentFlushTimestamp(
+  { wormholeJoinAddress, sourceDomain }: Config,
+  l1Signer: Signer
+): Promise<number> {
+  const wormholeJoin = await getL1ContractAt<WormholeJoin>(
+    l1Signer,
+    "WormholeJoin",
+    wormholeJoinAddress
+  );
+  const settleFilter = wormholeJoin.filters.Settle(l1String(sourceDomain));
+  const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now());
+  const settleEvents = await wormholeJoin.queryFilter(
+    settleFilter,
+    nearestBlock
+  );
+  const recentEvent = settleEvents[settleEvents.length - 1];
+  const block = await recentEvent.getBlock();
+  return block.timestamp;
 }
 
 async function flushesToBeFinalized(
@@ -113,7 +106,6 @@ async function flushesToBeFinalized(
   starknet: Starknet,
   config: ReturnType<typeof getConfig>
 ): Promise<Event[]> {
-
   async function getSettleMessageEvents(): Promise<Event[]> {
     const wormholeJoin = await getL1ContractAt<WormholeJoin>(
       l1Signer,
@@ -133,7 +125,9 @@ async function flushesToBeFinalized(
     );
   }
 
-  async function getConsumedSettleMessageEvents(event: Event): Promise<Event[]> {
+  async function getConsumedSettleMessageEvents(
+    event: Event
+  ): Promise<Event[]> {
     const consumedMessageFilter = starknet.filters.ConsumedMessageToL1(
       config.l2WormholeGatewayAddress,
       config.l1WormholeGatewayAddress
@@ -161,5 +155,5 @@ async function flushesToBeFinalized(
 if (process.argv[2] === "flush") {
   flush(process.argv[3]);
 } else if (process.argv[2] === "finalizeFlush") {
-  finalizeFlush(process.argv[3]);
+  finalizeFlush();
 }

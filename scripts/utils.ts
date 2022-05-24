@@ -31,10 +31,14 @@ export function getRequiredEnv(key: string): string {
 }
 
 export function getConfig() {
-  const localEnv = dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+  const localEnv = dotenv.config({
+    path: path.resolve(process.cwd(), ".env.local"),
+  });
   dotenvExpand.expand(localEnv);
   if (process.env.NODE_ENV === "dev") {
-    const forkEnv = dotenv.config({ path: path.resolve(process.cwd(), ".env.fork") });
+    const forkEnv = dotenv.config({
+      path: path.resolve(process.cwd(), ".env.fork"),
+    });
     dotenvExpand.expand(forkEnv);
   }
   const env = dotenv.config({ path: path.resolve(process.cwd(), ".env") });
@@ -47,8 +51,12 @@ export function getConfig() {
     flushDelay: parseInt(getRequiredEnv("FLUSH_DELAY")),
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
-    l1WormholeGatewayAddress: getRequiredEnv(`${network}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`),
-    l2WormholeGatewayAddress: getRequiredEnv(`${network}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`),
+    l1WormholeGatewayAddress: getRequiredEnv(
+      `${network}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`
+    ),
+    l2WormholeGatewayAddress: getRequiredEnv(
+      `${network}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`
+    ),
     wormholeJoinAddress: getRequiredEnv(`${network}_WORMHOLE_JOIN_ADDRESS`),
     starknetAddress: getRequiredEnv(`${network}_STARKNET_ADDRESS`),
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
@@ -57,12 +65,21 @@ export function getConfig() {
   };
 }
 
-export function getL1Signer({ ethereumProviderUrl, l1PrivateKey }: ReturnType<typeof getConfig>): Signer {
+export type Config = ReturnType<typeof getConfig>;
+
+export function getL1Signer({
+  ethereumProviderUrl,
+  l1PrivateKey,
+}: Config): Signer {
   const provider = ethers.getDefaultProvider(ethereumProviderUrl);
   return new ethers.Wallet(l1PrivateKey, provider);
 }
 
-export function getL2Signer({ starknetProviderUrl, l2AccountAddress, l2PrivateKey }: ReturnType<typeof getConfig>): starknet.Account {
+export function getL2Signer({
+  starknetProviderUrl,
+  l2AccountAddress,
+  l2PrivateKey,
+}: Config): starknet.Account {
   const provider = new starknet.Provider({
     baseUrl: starknetProviderUrl,
     feederGatewayUrl: "feeder_gateway",
@@ -111,7 +128,7 @@ export async function findNearestBlock(
   provider: ethers.providers.Provider,
   desiredTimestamp: number
 ): Promise<number> {
-  let currentBlockNumber = (await provider.getBlock('latest')).number;
+  let currentBlockNumber = (await provider.getBlock("latest")).number;
   let currentBlock = await provider.getBlock(currentBlockNumber);
 
   while (currentBlockNumber > 0 && currentBlock.timestamp > desiredTimestamp) {
