@@ -23,7 +23,7 @@ import {
 } from "./utils";
 
 
-async function flush(targetDomain: string) {
+async function flush() {
   const config = getConfig();
 
   const l1Signer = getL1Signer(config);
@@ -41,7 +41,7 @@ async function flush(targetDomain: string) {
     config.l2WormholeGatewayAddress
   );
 
-  const encodedDomain = l2String(targetDomain);
+  const encodedDomain = l2String(config.targetDomain);
   async function recentFlushTimestamp(): Promise<number> {
     const wormholeJoin = await getL1ContractAt<WormholeJoin>(
       l1Signer,
@@ -49,7 +49,7 @@ async function flush(targetDomain: string) {
       config.wormholeJoinAddress
     );
     const settleFilter = wormholeJoin.filters.Settle(l1String(config.sourceDomain));
-    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now());
+    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * config.flushDelay);
     const settleEvents = await wormholeJoin.queryFilter(settleFilter, nearestBlock);
     const recentEvent = settleEvents[settleEvents.length - 1];
     const block = await recentEvent.getBlock();
@@ -62,7 +62,7 @@ async function flush(targetDomain: string) {
   const daiToFlush = toUint(daiToFlushSplit);
   console.log(`DAI to flush: ${daiToFlush}`);
 
-  if (daiToFlush > 0 && (Date.now() > lastFlushTimestamp + config.flushDelay)) {
+  if (daiToFlush > config.flushMinimum && (Date.now() > lastFlushTimestamp + config.flushDelay)) {
     console.log("Sending `flush` transaction");
     const { transaction_hash } = await l2WormholeGateway.flush(encodedDomain, { maxFee: "0" });
     await l2Signer.waitForTransaction(transaction_hash);
@@ -70,7 +70,7 @@ async function flush(targetDomain: string) {
   }
 }
 
-async function finalizeFlush(targetDomain: string) {
+async function finalizeFlush() {
   const config = getConfig();
 
   const l1Signer = getL1Signer(config);
@@ -125,7 +125,7 @@ async function flushesToBeFinalized(
       config.l1WormholeGatewayAddress
     );
     const settleFilter = wormholeJoin.filters.Settle();
-    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now());
+    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * config.flushDelay);
     const settleEvents = await starknet.queryFilter(settleFilter, nearestBlock);
     return starknet.queryFilter(
       logMessageFilter,
@@ -159,7 +159,7 @@ async function flushesToBeFinalized(
 }
 
 if (process.argv[2] === "flush") {
-  flush(process.argv[3]);
+  flush();
 } else if (process.argv[2] === "finalizeFlush") {
-  finalizeFlush(process.argv[3]);
+  finalizeFlush();
 }

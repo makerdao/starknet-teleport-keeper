@@ -43,8 +43,10 @@ export function getConfig() {
   const network = getRequiredEnv("NETWORK").replace("-", "_").toUpperCase();
   return {
     network,
-    sourceDomain: `${network.split("_")[1]}-SLAVE-STARKNET-1`,
+    sourceDomain: getRequiredEnv(`${network}_SOURCE_DOMAIN`),
+    targetDomain: getRequiredEnv(`${network}_TARGET_DOMAIN`),
     flushDelay: parseInt(getRequiredEnv("FLUSH_DELAY")),
+    flushMinimum: parseInt(getRequiredEnv("FLUSH_MINIMUM")),
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
     l1WormholeGatewayAddress: getRequiredEnv(`${network}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`),
