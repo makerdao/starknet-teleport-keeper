@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import { BigNumber, Contract, ContractFactory, ethers, Signer } from "ethers";
+import { ArgentAccount } from "@shardlabs/starknet-hardhat-plugin/dist/account";
 import fs from "fs";
 import path from "path";
 import * as starknet from "starknet";

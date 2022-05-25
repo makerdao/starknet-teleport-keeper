@@ -21,7 +21,7 @@ import {
   toUint,
 } from "./utils";
 
-export async function flush(config: Config, targetDomain: string) {
+export async function flush(config: Config) {
   const l1Signer = getL1Signer(config);
   const l2Signer = getL2Signer(config);
 
@@ -31,7 +31,7 @@ export async function flush(config: Config, targetDomain: string) {
     config.l2WormholeGatewayAddress
   );
 
-  const encodedTargetDomain = l2String(targetDomain);
+  const encodedTargetDomain = l2String(config.targetDomain);
 
   const lastFlushTimestamp = await recentFlushTimestamp(config, l1Signer);
   const [daiToFlushSplit] = await l2WormholeGateway.batched_dai_to_flush(
@@ -48,6 +48,8 @@ export async function flush(config: Config, targetDomain: string) {
     );
     await l2Signer.waitForTransaction(transaction_hash);
     console.log("Success");
+  } else {
+    console.log("Flush not needed");
   }
 }
 
@@ -66,19 +68,20 @@ export async function finalizeFlush(config: Config) {
   );
 
   const flushes = await flushesToBeFinalized(l1Signer, starknet, config);
-  flushes.forEach(async (flush: Event) => {
+  for (let i=1; i < flushes.length; i++) {
+    const flush = flushes[i];
     console.log("Sending `finalizeFlush` transaction");
     const tx = await l1WormholeGateway.finalizeFlush(
       cairoShortStringToBytes32(flush.args.payload[1]),
-      flush.args.payload[2]
+      flush.args.payload[2],
     );
     await tx.wait();
     console.log("Success");
-  });
+  }
 }
 
 async function recentFlushTimestamp(
-  { wormholeJoinAddress, sourceDomain }: Config,
+  { wormholeJoinAddress, sourceDomain, flushDelay }: Config,
   l1Signer: Signer
 ): Promise<number> {
   const wormholeJoin = await getL1ContractAt<WormholeJoin>(
@@ -87,14 +90,19 @@ async function recentFlushTimestamp(
     wormholeJoinAddress
   );
   const settleFilter = wormholeJoin.filters.Settle(l1String(sourceDomain));
-  const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now());
+  const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * flushDelay);
   const settleEvents = await wormholeJoin.queryFilter(
     settleFilter,
-    nearestBlock
+    6800000,
+    // nearestBlock
   );
   const recentEvent = settleEvents[settleEvents.length - 1];
-  const block = await recentEvent.getBlock();
-  return block.timestamp;
+  if (recentEvent) {
+    const block = await recentEvent.getBlock();
+    return block.timestamp;
+  } else {
+    return 0;
+  }
 }
 
 async function flushesToBeFinalized(
@@ -108,17 +116,25 @@ async function flushesToBeFinalized(
       "WormholeJoin",
       config.wormholeJoinAddress
     );
+    const settleFilter = wormholeJoin.filters.Settle();
+    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * config.flushDelay);
+    const settleEvents = await starknet.queryFilter(settleFilter, nearestBlock);
+    const recentSettleEvent = settleEvents[settleEvents.length - 1];
     const logMessageFilter = starknet.filters.LogMessageToL1(
       config.l2WormholeGatewayAddress,
       config.l1WormholeGatewayAddress
     );
-    const settleFilter = wormholeJoin.filters.Settle();
-    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * config.flushDelay);
-    const settleEvents = await starknet.queryFilter(settleFilter, nearestBlock);
-    return starknet.queryFilter(
-      logMessageFilter,
-      settleEvents[settleEvents.length - 1].blockNumber
-    );
+    if (recentSettleEvent) {
+      return starknet.queryFilter(
+        logMessageFilter,
+        settleEvents[settleEvents.length - 1].blockNumber
+      );
+    } else {
+      return starknet.queryFilter(
+        logMessageFilter,
+        6800000
+      );
+    }
   }
 
   async function getConsumedSettleMessageEvents(
@@ -139,11 +155,9 @@ async function flushesToBeFinalized(
 
   const logMessageEvents = await getSettleMessageEvents();
   return Promise.all(
-    logMessageEvents.map(async (event: Event) => {
+    logMessageEvents.filter(async (event: Event) => {
       const consumedMessageEvents = await getConsumedSettleMessageEvents(event);
-      if (consumedMessageEvents.length === 0) {
-        return event;
-      }
+      return consumedMessageEvents.length === 0;
     })
   );
 }

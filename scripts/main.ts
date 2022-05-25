@@ -2,7 +2,7 @@ import { finalizeFlush, flush } from "./keeper";
 import { getConfig } from "./utils";
 
 (async () => {
-  await flush(getConfig(), process.argv[3]);
+  await flush(getConfig());
   await finalizeFlush(getConfig());
 })()
   .then(() => console.log("DONE"))
