@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import type {
-  ContractInterface,
+  Contract,
   Overrides,
   AddTransactionResponse,
   Invocation,
@@ -18,7 +18,7 @@ export type CallArray = {
   data_offset: BigNumberish;
   data_len: BigNumberish;
 };
-export interface ArgentAccount extends ContractInterface {
+export interface ArgentAccount extends Contract {
   initialize(
     signer: BigNumberish,
     guardian: BigNumberish,
