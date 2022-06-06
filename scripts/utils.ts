@@ -53,13 +53,13 @@ export function getConfig() {
     flushMinimum: parseInt(getRequiredEnv("FLUSH_MINIMUM")),
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
-    l1WormholeGatewayAddress: getRequiredEnv(
-      `${network}_L1_DAI_WORMHOLE_GATEWAY_ADDRESS`
+    l1TeleportGatewayAddress: getRequiredEnv(
+      `${network}_L1_DAI_TELEPORT_GATEWAY_ADDRESS`
     ),
-    l2WormholeGatewayAddress: getRequiredEnv(
-      `${network}_L2_DAI_WORMHOLE_GATEWAY_ADDRESS`
+    l2TeleportGatewayAddress: getRequiredEnv(
+      `${network}_L2_DAI_TELEPORT_GATEWAY_ADDRESS`
     ),
-    wormholeJoinAddress: getRequiredEnv(`${network}_WORMHOLE_JOIN_ADDRESS`),
+    teleportJoinAddress: getRequiredEnv(`${network}_TELEPORT_JOIN_ADDRESS`),
     starknetAddress: getRequiredEnv(`${network}_STARKNET_ADDRESS`),
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
     l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),

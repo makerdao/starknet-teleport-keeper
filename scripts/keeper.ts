@@ -1,11 +1,11 @@
 import { Event, Signer } from "ethers";
 import { isEqual } from "lodash";
 import {
-  L1DAIWormholeGateway,
+  L1DAITeleportGateway,
   Starknet,
-  WormholeJoin,
+  TeleportJoin,
 } from "types/ethers-contracts";
-import { l2_dai_wormhole_gateway } from "types/starknet-contracts";
+import { l2_dai_teleport_gateway } from "types/starknet-contracts";
 
 import {
   cairoShortStringToBytes32,
@@ -16,6 +16,7 @@ import {
   getL1Signer,
   getL2ContractAt,
   getL2Signer,
+  getRequiredEnv,
   l1String,
   l2String,
   toUint,
@@ -27,16 +28,16 @@ export async function flush(config: Config) {
   const l1Signer = getL1Signer(config);
   const l2Signer = getL2Signer(config);
 
-  const l2WormholeGateway = await getL2ContractAt<l2_dai_wormhole_gateway>(
+  const l2TeleportGateway = await getL2ContractAt<l2_dai_teleport_gateway>(
     l2Signer,
-    "l2_dai_wormhole_gateway",
-    config.l2WormholeGatewayAddress
+    "l2_dai_teleport_gateway",
+    config.l2TeleportGatewayAddress
   );
 
   const encodedTargetDomain = l2String(config.targetDomain);
 
   const lastFlushTimestamp = await recentFlushTimestamp(config, l1Signer);
-  const [daiToFlushSplit] = await l2WormholeGateway.batched_dai_to_flush(
+  const [daiToFlushSplit] = await l2TeleportGateway.batched_dai_to_flush(
     encodedTargetDomain
   );
   const daiToFlush = toUint(daiToFlushSplit);
@@ -47,11 +48,11 @@ export async function flush(config: Config) {
     Date.now() > lastFlushTimestamp + config.flushDelay
   ) {
     console.log("Sending `flush` transaction");
-    const { amount } = await l2WormholeGateway.estimate(
+    const { amount } = await l2TeleportGateway.estimate(
       "flush",
       [encodedTargetDomain]
     );
-    const { transaction_hash } = await l2WormholeGateway.flush(
+    const { transaction_hash } = await l2TeleportGateway.flush(
       encodedTargetDomain,
       { maxFee: amount * FEE_MULTIPLIER }
     );
@@ -65,10 +66,10 @@ export async function flush(config: Config) {
 export async function finalizeFlush(config: Config) {
   const l1Signer = getL1Signer(config);
 
-  const l1WormholeGateway = await getL1ContractAt<L1DAIWormholeGateway>(
+  const l1TeleportGateway = await getL1ContractAt<L1DAITeleportGateway>(
     l1Signer,
-    "L1DAIWormholeGateway",
-    config.l1WormholeGatewayAddress
+    "L1DAITeleportGateway",
+    config.l1TeleportGatewayAddress
   );
   const starknet = await getL1ContractAt<Starknet>(
     l1Signer,
@@ -80,7 +81,7 @@ export async function finalizeFlush(config: Config) {
   for (let i = 1; i < flushes.length; i++) {
     const flush = flushes[i];
     console.log("Sending `finalizeFlush` transaction");
-    const tx = await l1WormholeGateway.finalizeFlush(
+    const tx = await l1TeleportGateway.finalizeFlush(
       cairoShortStringToBytes32(flush.args.payload[1]),
       flush.args.payload[2]
     );
@@ -90,20 +91,20 @@ export async function finalizeFlush(config: Config) {
 }
 
 async function recentFlushTimestamp(
-  { wormholeJoinAddress, sourceDomain, flushDelay }: Config,
+  { teleportJoinAddress, sourceDomain, flushDelay }: Config,
   l1Signer: Signer
 ): Promise<number> {
-  const wormholeJoin = await getL1ContractAt<WormholeJoin>(
+  const teleportJoin = await getL1ContractAt<TeleportJoin>(
     l1Signer,
-    "WormholeJoin",
-    wormholeJoinAddress
+    "TeleportJoin",
+    teleportJoinAddress
   );
-  const settleFilter = wormholeJoin.filters.Settle(l1String(sourceDomain));
+  const settleFilter = teleportJoin.filters.Settle(l1String(sourceDomain));
   const nearestBlock = await findNearestBlock(
     l1Signer.provider,
     Date.now() - 10 * flushDelay
   );
-  const settleEvents = await wormholeJoin.queryFilter(
+  const settleEvents = await teleportJoin.queryFilter(
     settleFilter,
     6800000
     // nearestBlock
@@ -123,12 +124,12 @@ async function flushesToBeFinalized(
   config: ReturnType<typeof getConfig>
 ): Promise<Event[]> {
   async function getSettleMessageEvents(): Promise<Event[]> {
-    const wormholeJoin = await getL1ContractAt<WormholeJoin>(
+    const teleportJoin = await getL1ContractAt<TeleportJoin>(
       l1Signer,
-      "WormholeJoin",
-      config.wormholeJoinAddress
+      "TeleportJoin",
+      config.teleportJoinAddress
     );
-    const settleFilter = wormholeJoin.filters.Settle();
+    const settleFilter = teleportJoin.filters.Settle();
     const nearestBlock = await findNearestBlock(
       l1Signer.provider,
       Date.now() - 10 * config.flushDelay
@@ -136,8 +137,8 @@ async function flushesToBeFinalized(
     const settleEvents = await starknet.queryFilter(settleFilter, nearestBlock);
     const recentSettleEvent = settleEvents[settleEvents.length - 1];
     const logMessageFilter = starknet.filters.LogMessageToL1(
-      config.l2WormholeGatewayAddress,
-      config.l1WormholeGatewayAddress
+      config.l2TeleportGatewayAddress,
+      config.l1TeleportGatewayAddress
     );
     if (recentSettleEvent) {
       return starknet.queryFilter(
@@ -153,8 +154,8 @@ async function flushesToBeFinalized(
     event: Event
   ): Promise<Event[]> {
     const consumedMessageFilter = starknet.filters.ConsumedMessageToL1(
-      config.l2WormholeGatewayAddress,
-      config.l1WormholeGatewayAddress
+      config.l2TeleportGatewayAddress,
+      config.l1TeleportGatewayAddress
     );
     return (
       await starknet.queryFilter(consumedMessageFilter, event.blockNumber)
