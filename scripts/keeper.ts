@@ -5,7 +5,7 @@ import {
   Starknet,
   WormholeJoin,
 } from "types/ethers-contracts";
-import { l2_dai_wormhole_gateway } from "types/starknet-contracts/l2_dai_wormhole_gateway";
+import { l2_dai_wormhole_gateway } from "types/starknet-contracts";
 
 import {
   cairoShortStringToBytes32,
@@ -42,7 +42,10 @@ export async function flush(config: Config) {
   const daiToFlush = toUint(daiToFlushSplit);
   console.log(`DAI to flush: ${daiToFlush}`);
 
-  if (daiToFlush > config.flushMinimum && (Date.now() > lastFlushTimestamp + config.flushDelay)) {
+  if (
+    daiToFlush > config.flushMinimum &&
+    Date.now() > lastFlushTimestamp + config.flushDelay
+  ) {
     console.log("Sending `flush` transaction");
     const { amount } = await l2WormholeGateway.estimate(
       "flush",
@@ -74,12 +77,12 @@ export async function finalizeFlush(config: Config) {
   );
 
   const flushes = await flushesToBeFinalized(l1Signer, starknet, config);
-  for (let i=1; i < flushes.length; i++) {
+  for (let i = 1; i < flushes.length; i++) {
     const flush = flushes[i];
     console.log("Sending `finalizeFlush` transaction");
     const tx = await l1WormholeGateway.finalizeFlush(
       cairoShortStringToBytes32(flush.args.payload[1]),
-      flush.args.payload[2],
+      flush.args.payload[2]
     );
     await tx.wait();
     console.log("Success");
@@ -96,10 +99,13 @@ async function recentFlushTimestamp(
     wormholeJoinAddress
   );
   const settleFilter = wormholeJoin.filters.Settle(l1String(sourceDomain));
-  const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * flushDelay);
+  const nearestBlock = await findNearestBlock(
+    l1Signer.provider,
+    Date.now() - 10 * flushDelay
+  );
   const settleEvents = await wormholeJoin.queryFilter(
     settleFilter,
-    6800000,
+    6800000
     // nearestBlock
   );
   const recentEvent = settleEvents[settleEvents.length - 1];
@@ -123,7 +129,10 @@ async function flushesToBeFinalized(
       config.wormholeJoinAddress
     );
     const settleFilter = wormholeJoin.filters.Settle();
-    const nearestBlock = await findNearestBlock(l1Signer.provider, Date.now() - 10 * config.flushDelay);
+    const nearestBlock = await findNearestBlock(
+      l1Signer.provider,
+      Date.now() - 10 * config.flushDelay
+    );
     const settleEvents = await starknet.queryFilter(settleFilter, nearestBlock);
     const recentSettleEvent = settleEvents[settleEvents.length - 1];
     const logMessageFilter = starknet.filters.LogMessageToL1(
@@ -136,10 +145,7 @@ async function flushesToBeFinalized(
         settleEvents[settleEvents.length - 1].blockNumber
       );
     } else {
-      return starknet.queryFilter(
-        logMessageFilter,
-        6800000
-      );
+      return starknet.queryFilter(logMessageFilter, 6800000);
     }
   }
 

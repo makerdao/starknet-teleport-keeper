@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type {
-  ContractInterface,
   Contract,
   Overrides,
   AddTransactionResponse,
