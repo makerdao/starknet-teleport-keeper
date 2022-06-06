@@ -64,6 +64,7 @@ export function getConfig() {
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
     l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),
     l2PrivateKey: getRequiredEnv(`${network}_L2_PRIVATE_KEY`),
+    l2GasMultiplier: parseInt(getRequiredEnv("L2_GAS_MULTIPLIER")),
   };
 }
 

@@ -16,13 +16,10 @@ import {
   getL1Signer,
   getL2ContractAt,
   getL2Signer,
-  getRequiredEnv,
   l1String,
   l2String,
   toUint,
 } from "./utils";
-
-const L2_FEE_MULTIPLIER = parseInt(getRequiredEnv("L2_FEE_MULTIPLIER"));
 
 export async function flush(config: Config) {
   const l1Signer = getL1Signer(config);
@@ -53,7 +50,7 @@ export async function flush(config: Config) {
     ]);
     const { transaction_hash } = await l2TeleportGateway.flush(
       encodedTargetDomain,
-      { maxFee: amount * L2_FEE_MULTIPLIER }
+      { maxFee: amount * config.l2GasMultiplier }
     );
     await l2Signer.waitForTransaction(transaction_hash);
     console.log("Success");
