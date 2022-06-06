@@ -21,6 +21,8 @@ import {
   toUint,
 } from "./utils";
 
+const FEE_MULTIPLIER = parseInt(getRequiredEnv("FEE_MULTIPLIER"));
+
 export async function flush(config: Config) {
   const l1Signer = getL1Signer(config);
   const l2Signer = getL2Signer(config);
@@ -42,9 +44,13 @@ export async function flush(config: Config) {
 
   if (daiToFlush > config.flushMinimum && (Date.now() > lastFlushTimestamp + config.flushDelay)) {
     console.log("Sending `flush` transaction");
+    const { amount } = await l2WormholeGateway.estimate(
+      "flush",
+      [encodedTargetDomain]
+    );
     const { transaction_hash } = await l2WormholeGateway.flush(
       encodedTargetDomain,
-      { maxFee: "0" }
+      { maxFee: amount * FEE_MULTIPLIER }
     );
     await l2Signer.waitForTransaction(transaction_hash);
     console.log("Success");
