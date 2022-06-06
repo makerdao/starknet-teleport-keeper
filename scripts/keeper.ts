@@ -22,7 +22,7 @@ import {
   toUint,
 } from "./utils";
 
-const FEE_MULTIPLIER = parseInt(getRequiredEnv("FEE_MULTIPLIER"));
+const L2_FEE_MULTIPLIER = parseInt(getRequiredEnv("L2_FEE_MULTIPLIER"));
 
 export async function flush(config: Config) {
   const l1Signer = getL1Signer(config);
@@ -48,13 +48,12 @@ export async function flush(config: Config) {
     Date.now() > lastFlushTimestamp + config.flushDelay
   ) {
     console.log("Sending `flush` transaction");
-    const { amount } = await l2TeleportGateway.estimate(
-      "flush",
-      [encodedTargetDomain]
-    );
+    const { amount } = await l2TeleportGateway.estimateFee.flush([
+      encodedTargetDomain
+    ]);
     const { transaction_hash } = await l2TeleportGateway.flush(
       encodedTargetDomain,
-      { maxFee: amount * FEE_MULTIPLIER }
+      { maxFee: amount * L2_FEE_MULTIPLIER }
     );
     await l2Signer.waitForTransaction(transaction_hash);
     console.log("Success");
@@ -106,8 +105,7 @@ async function recentFlushTimestamp(
   );
   const settleEvents = await teleportJoin.queryFilter(
     settleFilter,
-    6800000
-    // nearestBlock
+    nearestBlock
   );
   const recentEvent = settleEvents[settleEvents.length - 1];
   if (recentEvent) {
