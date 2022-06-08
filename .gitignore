@@ -1,4 +1,5 @@
 node_modules
+types
 .env.local
 yarn-error.log
 **/*.js
