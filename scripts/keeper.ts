@@ -20,16 +20,17 @@ import {
   getL2Signer,
   getL1TeleportGatewayAddress,
   toUint,
+  findNearestBlock,
 } from "./utils";
 
 const HANDLE_FLUSH = BigNumber.from(1);
 const FINALIZE_FLUSH = BigNumber.from(1);
 
-async function recentFlushTimestamps(
+async function getDomainsToFlush(
   l2TeleportGateway: l2_dai_teleport_gateway,
   l1Signer: Signer,
   { flushDelay, flushDelayMultiplier, starknetAddress }: Config
-): Promise<{ timestamp: number, targetDomain: string }[]> {
+): Promise<string[]> {
   const l1TeleportGatewayAddress = `0x${(await l2TeleportGateway.teleport_gateway())[0].toString(16)}`;
   const starknet = await getL1ContractAt<Starknet>(
     l1Signer,
@@ -42,17 +43,21 @@ async function recentFlushTimestamps(
   );
   const logMessageEvents = await starknet.queryFilter(
     logMessageFilter,
-    Date.now() - flushDelayMultiplier * flushDelay
+    findNearestBlock(l1Signer.provider, Date.now() - flushDelayMultiplier * flushDelay)
   );
   const flushEvents = logMessageEvents.filter(event => {
     return event.args[0] === FINALIZE_FLUSH;
   });
-  return Promise.all(flushEvents.map(async (event) => {
-    return {
-      timestamp: (await event.getBlock()).timestamp,
-      targetDomain: cairoShortStringToBytes32(BigNumber.from(event.args[1]))
-    }
-  }));
+
+  // eventually get targetDomains from File events
+  const targetDomains = ["GOERLI-MASTER-1"];
+  const domainsToFlush = [];
+
+  flushEvents.forEach(async (event) => {
+    const targetDomain = cairoShortStringToBytes32(BigNumber.from(event.args[1]));
+    domainsToFlush.push(targetDomain);
+  });
+  return domainsToFlush;
 }
 
 export async function flush(config: Config) {
@@ -65,18 +70,15 @@ export async function flush(config: Config) {
     config.l2TeleportGatewayAddress
   );
 
-  const lastFlushTimestamps = await recentFlushTimestamps(l2TeleportGateway, l1Signer, config);
-  lastFlushTimestamps.forEach(async ({ timestamp, targetDomain }) => {
+  const domainsToFlush = await getDomainsToFlush(l2TeleportGateway, l1Signer, config);
+  domainsToFlush.forEach(async (targetDomain) => {
     const [daiToFlushSplit] = await l2TeleportGateway.batched_dai_to_flush(
       targetDomain
     );
     const daiToFlush = toUint(daiToFlushSplit);
     console.log(`DAI to flush: ${daiToFlush}`);
 
-    if (
-      daiToFlush > config.flushMinimum &&
-      Date.now() > timestamp + config.flushDelay
-    ) {
+    if (daiToFlush > config.flushMinimum) {
       console.log("Sending `flush` transaction");
       const { amount } = await l2TeleportGateway.estimateFee.flush([
         targetDomain 
