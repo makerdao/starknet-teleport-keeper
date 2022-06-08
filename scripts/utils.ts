@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import * as starknet from "starknet";
 import { assert } from "ts-essentials";
+import { l2_dai_teleport_gateway } from "types/starknet-contracts";
 
 export function toUint(splitUint: object): bigint {
   const _a = Object.values(splitUint);
@@ -47,19 +48,14 @@ export function getConfig() {
   const network = getRequiredEnv("NETWORK").replace("-", "_").toUpperCase();
   return {
     network,
-    sourceDomain: getRequiredEnv(`${network}_SOURCE_DOMAIN`),
-    targetDomain: getRequiredEnv(`${network}_TARGET_DOMAIN`),
     flushDelay: parseInt(getRequiredEnv("FLUSH_DELAY")),
+    flushDelayMultiplier: parseInt(getRequiredEnv("FLUSH_DELAY_MULTIPLIER")),
     flushMinimum: parseInt(getRequiredEnv("FLUSH_MINIMUM")),
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
-    l1TeleportGatewayAddress: getRequiredEnv(
-      `${network}_L1_DAI_TELEPORT_GATEWAY_ADDRESS`
-    ),
     l2TeleportGatewayAddress: getRequiredEnv(
       `${network}_L2_DAI_TELEPORT_GATEWAY_ADDRESS`
     ),
-    teleportJoinAddress: getRequiredEnv(`${network}_TELEPORT_JOIN_ADDRESS`),
     starknetAddress: getRequiredEnv(`${network}_STARKNET_ADDRESS`),
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
     l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),
@@ -140,4 +136,8 @@ export async function findNearestBlock(
   }
 
   return currentBlock.number;
+}
+
+export async function getL1TeleportGatewayAddress(l2TeleportGateway: l2_dai_teleport_gateway): Promise<string> {
+  return `0x${(await l2TeleportGateway.teleport_gateway())[0].toString(16)}`;
 }
