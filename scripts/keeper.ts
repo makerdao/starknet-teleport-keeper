@@ -26,10 +26,10 @@ import {
 const HANDLE_FLUSH = BigNumber.from(1);
 const FINALIZE_FLUSH = BigNumber.from(1);
 
-async function getDomainsToFlush(
+async function getFlushedDomains(
   l2TeleportGateway: l2_dai_teleport_gateway,
   l1Signer: Signer,
-  { flushDelay, flushDelayMultiplier, starknetAddress, targetDomains }: Config
+  { flushDelay, starknetAddress, targetDomains }: Config
 ): Promise<string[]> {
   const l1TeleportGatewayAddress = await getL1TeleportGatewayAddress(l2TeleportGateway);
   const starknet = await getL1ContractAt<Starknet>(
@@ -43,20 +43,20 @@ async function getDomainsToFlush(
   );
   const logMessageEvents = await starknet.queryFilter(
     logMessageFilter,
-    await findNearestBlock(l1Signer.provider, Date.now() - flushDelayMultiplier * flushDelay)
+    await findNearestBlock(l1Signer.provider, Date.now() - flushDelay)
   );
   const flushEvents = logMessageEvents.filter(event => {
     return event.args[0] === FINALIZE_FLUSH;
   });
 
   // eventually get targetDomains from File events
-  const domainsToFlush = [];
+  const flushedDomains = [];
 
   flushEvents.forEach(async (event) => {
     const targetDomain = cairoShortStringToBytes32(BigNumber.from(event.args[1]));
-    domainsToFlush.push(targetDomain);
+    flushedDomains.push(targetDomain);
   });
-  return domainsToFlush;
+  return flushedDomains;
 }
 
 export async function flush(config: Config) {
@@ -69,7 +69,7 @@ export async function flush(config: Config) {
     config.l2TeleportGatewayAddress
   );
 
-  const domainsToFlush = await getDomainsToFlush(l2TeleportGateway, l1Signer, config);
+  const flushedDomains = await getFlushedDomains(l2TeleportGateway, l1Signer, config);
   config.targetDomains.forEach(async (targetDomain: string) => {
     const [daiToFlushSplit] = await l2TeleportGateway.batched_dai_to_flush(
       targetDomain
@@ -78,9 +78,7 @@ export async function flush(config: Config) {
     console.log(`DAI to flush: ${daiToFlush}`);
 
     const sendFlush = async () => {
-      console.log("Sending `flush` transaction");
-      console.log(` Domain: ${targetDomain}`);
-      console.log(` Amount: ${daiToFlush}`);
+      console.log(`Sending \`flush\` transaction - Domain: ${targetDomain} Amount: ${daiToFlush}`);
       const { amount } = await l2TeleportGateway.estimateFee.flush(targetDomain);
       const { transaction_hash } = await l2TeleportGateway.flush(
         targetDomain,
@@ -92,7 +90,7 @@ export async function flush(config: Config) {
 
     if (daiToFlush > config.flushMinimum) {
       await sendFlush();
-    } else if (daiToFlush > 0 && domainsToFlush.includes(targetDomain)) {
+    } else if (daiToFlush > 0 && !flushedDomains.includes(targetDomain)) {
       await sendFlush();
     } else {
       console.log("Flush not needed");
@@ -171,9 +169,7 @@ export async function finalizeFlush(config: Config) {
   for (let i = 1; i < flushes.length; i++) {
     const flush = flushes[i];
     const targetDomain = cairoShortStringToBytes32(flush.args.payload[1]);
-    console.log("Sending `finalizeFlush` transaction");
-    console.log(` Domain: ${targetDomain}`);
-    console.log(` Amount: ${flush.args.payload[2]}`);
+    console.log(`Sending \`flush\` transaction - Domain: ${targetDomain} Amount: ${flush.args.payload[2]}`);
     const tx = await l1TeleportGateway.finalizeFlush(
       targetDomain,
       flush.args.payload[2]
