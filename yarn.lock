@@ -583,15 +583,14 @@
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
 
-"@typechain/starknet@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@typechain/starknet/-/starknet-0.1.0.tgz#0e267370fd6be7d51b49faa3f50b685a780cb479"
-  integrity sha512-C4OiWPEJjUMYAqr1Ww+AkM2qTgkiw1+eTQacngjtQIZSzY2V/ngLJm6xsOx8t1ZV3vWCgFlff9YEo+pizDeCgw==
+"@typechain/starknet@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@typechain/starknet/-/starknet-0.2.0.tgz#9ee9fbd2e97fefc5f457b40a30f1f1f800b7e050"
+  integrity sha512-1KHrhBWlUixgpqEvSLKjNJyQrdGYb2bx/HvV9kKCT+fNvF/M0sLabmIdcZcdCWle3C6CBuyrBQAa9I9ryaRyRw==
   dependencies:
     bn.js "^4.11.0"
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
-    tsc "^2.0.4"
     web3 "^1.7.3"
 
 "@types/bn.js@^4.11.5":
@@ -1130,6 +1129,11 @@ bs58check@^2.1.2:
     create-hash "^1.1.0"
     safe-buffer "^5.1.2"
 
+buffer-from@^1.0.0:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.2.tgz#2b146a6fd72e80b4f55d255f35ed59a3a9a41bd5"
+  integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
+
 buffer-to-arraybuffer@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/buffer-to-arraybuffer/-/buffer-to-arraybuffer-0.0.5.tgz#6064a40fa76eb43c723aba9ef8f6e1216d10511a"
@@ -1577,6 +1581,11 @@ dom-walk@^0.1.0:
   resolved "https://registry.yarnpkg.com/dom-walk/-/dom-walk-0.1.2.tgz#0c548bef048f4d1f2a97249002236060daa3fd84"
   integrity sha512-6QvTW9mrGeIegrFXdtQi9pk7O/nSK6lSdXW2eqUspN5LWD7UTji2Fqw5V2YLjBpHEoU9Xl/eUWNpDeZvoyOv2w==
 
+dotenv-expand@^8.0.3:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/dotenv-expand/-/dotenv-expand-8.0.3.tgz#29016757455bcc748469c83a19b36aaf2b83dd6e"
+  integrity sha512-SErOMvge0ZUyWd5B0NXMQlDkN+8r+HhVUsxgOO7IoPDOdDRD2JjExpN6y3KnFR66jsJMwSn1pqIivhU5rcJiNg==
+
 dotenv@^16.0.0:
   version "16.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.0.0.tgz#c619001253be89ebb638d027b609c75c26e47411"
@@ -1777,6 +1786,14 @@ esbuild-openbsd-64@0.14.34:
   version "0.14.34"
   resolved "https://registry.yarnpkg.com/esbuild-openbsd-64/-/esbuild-openbsd-64-0.14.34.tgz#b9bc44b4f70031fb01b173b279daeffc4d4f54b7"
   integrity sha512-vmy9DxXVnRiI14s8GKuYBtess+EVcDALkbpTqd5jw4XITutIzyB7n4x0Tj5utAkKsgZJB22lLWGekr0ABnSLow==
+
+esbuild-runner@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/esbuild-runner/-/esbuild-runner-2.2.1.tgz#3866fca62cbf9645e939b43a0c65446f9a53064f"
+  integrity sha512-VP0VfJJZiZ3cKzdOH59ZceDxx/GzBKra7tiGM8MfFMLv6CR1/cpsvtQ3IsJI3pz7HyeYxtbPyecj3fHwR+3XcQ==
+  dependencies:
+    source-map-support "0.5.19"
+    tslib "2.3.1"
 
 esbuild-sunos-64@0.14.34:
   version "0.14.34"
@@ -4158,7 +4175,15 @@ solidity-coverage@^0.7.20:
     shelljs "^0.8.3"
     web3-utils "^1.3.0"
 
-source-map@^0.6.1:
+source-map-support@0.5.19:
+  version "0.5.19"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.19.tgz#a98b62f86dcaf4f67399648c085291ab9e8fed61"
+  integrity sha512-Wonm7zOCIJzBGQdB+thsPar0kYuCIzYvxZwlBa87yi/Mdjv7Tip2cyVbLj5o0cFPN4EVkuTwb3GDDyUx2DGnGw==
+  dependencies:
+    buffer-from "^1.0.0"
+    source-map "^0.6.0"
+
+source-map@^0.6.0, source-map@^0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
@@ -4430,10 +4455,10 @@ ts-node@^10.5.0:
     v8-compile-cache-lib "^3.0.0"
     yn "3.1.1"
 
-tsc@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/tsc/-/tsc-2.0.4.tgz#5f6499146abea5dca4420b451fa4f2f9345238f5"
-  integrity sha512-fzoSieZI5KKJVBYGvwbVZs/J5za84f2lSTLPYf6AGiIf43tZ3GNrI1QzTLcjtyDDP4aLxd46RTZq1nQxe7+k5Q==
+tslib@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
+  integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
 
 tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"
