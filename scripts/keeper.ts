@@ -29,7 +29,7 @@ const FINALIZE_FLUSH = BigNumber.from(1);
 async function getFlushedDomains(
   l2TeleportGateway: l2_dai_teleport_gateway,
   l1Signer: Signer,
-  { flushDelay, starknetAddress, targetDomains }: Config
+  { flushDelay, starknetAddress }: Config
 ): Promise<string[]> {
   const l1TeleportGatewayAddress = await getL1TeleportGatewayAddress(l2TeleportGateway);
   const starknet = await getL1ContractAt<Starknet>(
@@ -52,7 +52,7 @@ async function getFlushedDomains(
   // eventually get targetDomains from File events
   const flushedDomains = [];
 
-  flushEvents.forEach(async (event) => {
+  flushEvents.forEach((event) => {
     const targetDomain = cairoShortStringToBytes32(BigNumber.from(event.args[1]));
     flushedDomains.push(targetDomain);
   });
@@ -70,7 +70,7 @@ export async function flush(config: Config) {
   );
 
   const flushedDomains = await getFlushedDomains(l2TeleportGateway, l1Signer, config);
-  config.targetDomains.forEach(async (targetDomain: string) => {
+  config.targetDomains.map(async (targetDomain: string) => {
     const [daiToFlushSplit] = await l2TeleportGateway.batched_dai_to_flush(
       targetDomain
     );
@@ -116,7 +116,7 @@ async function flushesToBeFinalized(
       )
     ).filter((logEvent) => {
       return logEvent.args[0] === HANDLE_FLUSH;
-    });;
+    });
   }
 
   async function getConsumedSettleMessageEvents(

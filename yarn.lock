@@ -583,10 +583,10 @@
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
 
-"@typechain/starknet@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@typechain/starknet/-/starknet-0.2.0.tgz#9ee9fbd2e97fefc5f457b40a30f1f1f800b7e050"
-  integrity sha512-1KHrhBWlUixgpqEvSLKjNJyQrdGYb2bx/HvV9kKCT+fNvF/M0sLabmIdcZcdCWle3C6CBuyrBQAa9I9ryaRyRw==
+"@typechain/starknet@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@typechain/starknet/-/starknet-0.2.3.tgz#1ac7dbfb39639481a29b76c42c510640306034a8"
+  integrity sha512-NVjMX/dGJ5w11SDFnHQ6vuXDZD/US0pooJZCkJ9uxHPlVoGBe3YUi9QodeYarN35OT/puo/iyT1bVZSbsVSlkQ==
   dependencies:
     bn.js "^4.11.0"
     lodash "^4.17.15"
