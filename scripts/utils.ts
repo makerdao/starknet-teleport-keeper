@@ -6,8 +6,9 @@ import path from "path";
 import * as starknet from "starknet";
 import { assert } from "ts-essentials";
 import { l2_dai_teleport_gateway } from "types/starknet-contracts";
+import {Uint256Output} from "../types/starknet-contracts/l2_dai_teleport_gateway";
 
-export function toUint(splitUint: object): bigint {
+export function toUint(splitUint: Uint256Output): bigint {
   const _a = Object.values(splitUint);
   return BigInt(`0x${_a[1].toString(16)}${_a[0].toString(16)}`);
 }
