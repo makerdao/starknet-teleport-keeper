@@ -9,8 +9,8 @@ Keeper settings:
 * `TARGET_DOMAINS` - comma separated strings determining the target domains to flush
 
 Setup local config
-`cp .env.local.example .env.local`
-Set `INFURA_API_KEY` as well as the secrets for L1 and L2 signers.
+* Run `cp .env.local.example .env.local`
+* Set `INFURA_API_KEY` as well as the secrets for L1 and L2 signers.
 
 ## Functions
 
