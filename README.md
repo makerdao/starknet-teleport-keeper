@@ -1,11 +1,16 @@
 # Starknet DAI Keeper
 
 ## Config
+
+Keeper settings:
 * `FLUSH_DELAY` - minimum time in milliseconds between flushes
 * `FLUSH_DELAY_MULTIPLIER` - number of `FLUSH_DELAY`'s to look back for flush l2->l1 messages
 * `FLUSH_MINIMUM` - minimum amount of debt required to flush
 * `TARGET_DOMAINS` - comma separated strings determining the target domains to flush
 
+Setup local config
+`cp .env.local.example .env.local`
+Set `INFURA_API_KEY` as well as the secrets for L1 and L2 signers.
 
 ## Functions
 
