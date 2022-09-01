@@ -7,6 +7,24 @@ import * as starknet from "starknet";
 import { assert } from "ts-essentials";
 import { l2_dai_teleport_gateway } from "types/starknet-contracts";
 
+export class Globals {
+  FLUSH_DELAY = 100;
+  FLUSH_DELAY_MULTIPLIER = 10;
+  FLUSH_MINIMUM = 0;
+  L2_GAS_MULTIPLIER = 2;
+  // MAINNET
+  ALPHA_MAINNET_STARKNET_ADDRESS = "0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4";
+  ALPHA_MAINNET_L2_DAI_TELEPORT_GATEWAY_ADDRESS = "";
+  ALPHA_MAINNET_TARGET_DOMAINS = "MAINNET-MASTER-1";
+  // GOERLI
+  ALPHA_GOERLI_STARKNET_ADDRESS = "0xde29d060D45901Fb19ED6C6e959EB22d8626708e";
+  ALPHA_GOERLI_L2_DAI_TELEPORT_GATEWAY_ADDRESS =
+    "0x03236409bbcd10f29d56cbe270e383d865e71837959cea7127611d4890bb46d9";
+  ALPHA_GOERLI_TARGET_DOMAINS = "GOERLI-MASTER-1";
+}
+
+export const globals = new Globals();
+
 export function toUint(splitUint: object): bigint {
   const _a = Object.values(splitUint);
   return BigInt(`0x${_a[1].toString(16)}${_a[0].toString(16)}`);
@@ -48,20 +66,19 @@ export function getConfig() {
   const network = getRequiredEnv("NETWORK").replace("-", "_").toUpperCase();
   return {
     network,
-    flushDelay: parseInt(getRequiredEnv("FLUSH_DELAY")),
-    flushDelayMultiplier: parseInt(getRequiredEnv("FLUSH_DELAY_MULTIPLIER")),
-    flushMinimum: parseInt(getRequiredEnv("FLUSH_MINIMUM")),
+    flushDelay: globals.FLUSH_DELAY,
+    flushDelayMultiplier: globals.FLUSH_DELAY_MULTIPLIER,
+    flushMinimum: globals.FLUSH_MINIMUM,
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
-    l2TeleportGatewayAddress: getRequiredEnv(
-      `${network}_L2_DAI_TELEPORT_GATEWAY_ADDRESS`
-    ),
-    starknetAddress: getRequiredEnv(`${network}_STARKNET_ADDRESS`),
+    l2TeleportGatewayAddress:
+      globals[`${network}_L2_DAI_TELEPORT_GATEWAY_ADDRESS`],
+    starknetAddress: globals[`${network}_STARKNET_ADDRESS`],
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
-    l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),
+    l2AccountAddress: globals[`${network}_L2_ACCOUNT_ADDRESS`],
     l2PrivateKey: getRequiredEnv(`${network}_L2_PRIVATE_KEY`),
-    l2GasMultiplier: parseInt(getRequiredEnv("L2_GAS_MULTIPLIER")),
-    targetDomains: getRequiredEnv(`${network}_TARGET_DOMAINS`).split(",")
+    l2GasMultiplier: globals.L2_GAS_MULTIPLIER,
+    targetDomains: globals[`${network}_TARGET_DOMAINS`].split(","),
   };
 }
 
@@ -139,6 +156,8 @@ export async function findNearestBlock(
   return currentBlock.number;
 }
 
-export async function getL1TeleportGatewayAddress(l2TeleportGateway: l2_dai_teleport_gateway): Promise<string> {
+export async function getL1TeleportGatewayAddress(
+  l2TeleportGateway: l2_dai_teleport_gateway
+): Promise<string> {
   return `0x${(await l2TeleportGateway.teleport_gateway())[0].toString(16)}`;
 }
