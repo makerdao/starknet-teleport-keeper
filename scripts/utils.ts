@@ -49,6 +49,11 @@ export function getRequiredEnv(key: string): string {
   return value;
 }
 
+export function getEnv(key: string): string | null {
+  const value = process.env[key];
+  return value;
+}
+
 export function getConfig() {
   const localEnv = dotenv.config({
     path: path.resolve(process.cwd(), ".env.local"),
@@ -66,19 +71,25 @@ export function getConfig() {
   const network = getRequiredEnv("NETWORK").replace("-", "_").toUpperCase();
   return {
     network,
-    flushDelay: globals.FLUSH_DELAY,
-    flushDelayMultiplier: globals.FLUSH_DELAY_MULTIPLIER,
-    flushMinimum: globals.FLUSH_MINIMUM,
+    flushDelay: getEnv("FLUSH_DELAY") ?? globals.FLUSH_DELAY,
+    flushDelayMultiplier:
+      getEnv("FLUSH_DELAY_MULTIPLIER") ?? globals.FLUSH_DELAY_MULTIPLIER,
+    flushMinimum: getEnv("FLUSH_MINIMUM") ?? globals.FLUSH_MINIMUM,
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
     l2TeleportGatewayAddress:
+      getEnv(`${network}_L2_DAI_TELEPORT_GATEWAY_ADDRESS`) ??
       globals[`${network}_L2_DAI_TELEPORT_GATEWAY_ADDRESS`],
-    starknetAddress: globals[`${network}_STARKNET_ADDRESS`],
+    starknetAddress:
+      getEnv(`${network}_STARKNET_ADDRESS`) ??
+      globals[`${network}_STARKNET_ADDRESS`],
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
-    l2AccountAddress: globals[`${network}_L2_ACCOUNT_ADDRESS`],
+    l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),
     l2PrivateKey: getRequiredEnv(`${network}_L2_PRIVATE_KEY`),
-    l2GasMultiplier: globals.L2_GAS_MULTIPLIER,
-    targetDomains: globals[`${network}_TARGET_DOMAINS`].split(","),
+    l2GasMultiplier: getEnv("L2_GAS_MULTIPLIER") ?? globals.L2_GAS_MULTIPLIER,
+    targetDomains:
+      getEnv(`${network}_TARGET_DOMAINS`)?.split(",") ??
+      globals[`${network}_TARGET_DOMAINS`].split(","),
   };
 }
 
