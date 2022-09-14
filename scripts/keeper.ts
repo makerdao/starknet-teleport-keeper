@@ -93,7 +93,6 @@ export async function flush(config: Config) {
       const { gas_consumed } = await l2TeleportGateway.estimateFee.flush(
         l2String(targetDomain)
       );
-      console.log(gas_consumed);
       const { transaction_hash } = await l2TeleportGateway.flush(
         l2String(targetDomain),
         {

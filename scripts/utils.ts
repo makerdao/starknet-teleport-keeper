@@ -111,15 +111,11 @@ export function getL2Signer({
   l2PrivateKey,
 }: Config): starknet.Account {
   const provider = new starknet.Provider({
-    baseUrl: starknetProviderUrl,
-    feederGatewayUrl: "feeder_gateway",
-    gatewayUrl: "gateway",
+    rpc: {
+      nodeUrl: starknetProviderUrl,
+    },
   });
   const starkKeyPair = starknet.ec.getKeyPair(l2PrivateKey);
-  const starkKeyPub = starknet.ec.getStarkKey(starkKeyPair);
-  const compiledArgentAccount = JSON.parse(
-    fs.readFileSync("./abis/l2/ArgentAccount.json").toString("ascii")
-  );
   return new starknet.Account(provider, l2AccountAddress, starkKeyPair);
 }
 
