@@ -17,6 +17,7 @@ import {
   getL1TeleportGatewayAddress,
   getL2ContractAt,
   getL2Signer,
+  l2String,
   toUint,
 } from "./utils";
 
@@ -63,6 +64,7 @@ async function getFlushedDomains(
 export async function flush(config: Config) {
   const l1Signer = getL1Signer(config);
   const l2Signer = getL2Signer(config);
+  // console.log(l2Signer);
 
   const l2TeleportGateway = await getL2ContractAt<l2_dai_teleport_gateway>(
     l2Signer,
@@ -76,9 +78,11 @@ export async function flush(config: Config) {
     config
   );
   config.targetDomains.forEach(async (targetDomain: string) => {
+    // console.log(await l2TeleportGateway.batched_dai_to_flush(targetDomain));
     const [daiToFlushSplit] = await l2TeleportGateway.batched_dai_to_flush(
-      targetDomain
+      l2String(targetDomain)
     );
+
     const daiToFlush = toUint(daiToFlushSplit);
     console.log(`DAI to flush: ${daiToFlush}`);
 
@@ -86,12 +90,17 @@ export async function flush(config: Config) {
       console.log(
         `Sending \`flush\` transaction - Domain: ${targetDomain} Amount: ${daiToFlush}`
       );
-      const { amount } = await l2TeleportGateway.estimateFee.flush(
-        targetDomain
+      const { gas_consumed } = await l2TeleportGateway.estimateFee.flush(
+        l2String(targetDomain)
       );
-      const { transaction_hash } = await l2TeleportGateway.flush(targetDomain, {
-        maxFee: amount * config.l2GasMultiplier,
-      });
+      console.log(gas_consumed);
+      const { transaction_hash } = await l2TeleportGateway.flush(
+        l2String(targetDomain),
+        {
+          maxFee: gas_consumed.toNumber() * config.l2GasMultiplier,
+        }
+      );
+
       await l2Signer.waitForTransaction(transaction_hash);
       console.log("Success");
     };

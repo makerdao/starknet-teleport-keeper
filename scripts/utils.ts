@@ -71,10 +71,11 @@ export function getConfig() {
   const network = getRequiredEnv("NETWORK").replace("-", "_").toUpperCase();
   return {
     network,
-    flushDelay: getEnv("FLUSH_DELAY") ?? globals.FLUSH_DELAY,
+    flushDelay: Number(getEnv("FLUSH_DELAY")) ?? globals.FLUSH_DELAY,
     flushDelayMultiplier:
-      getEnv("FLUSH_DELAY_MULTIPLIER") ?? globals.FLUSH_DELAY_MULTIPLIER,
-    flushMinimum: getEnv("FLUSH_MINIMUM") ?? globals.FLUSH_MINIMUM,
+      Number(getEnv("FLUSH_DELAY_MULTIPLIER")) ??
+      globals.FLUSH_DELAY_MULTIPLIER,
+    flushMinimum: Number(getEnv("FLUSH_MINIMUM")) ?? globals.FLUSH_MINIMUM,
     ethereumProviderUrl: getRequiredEnv(`${network}_ETHEREUM_PROVIDER_URL`),
     starknetProviderUrl: getRequiredEnv(`${network}_STARKNET_PROVIDER_URL`),
     l2TeleportGatewayAddress:
@@ -86,7 +87,8 @@ export function getConfig() {
     l1PrivateKey: getRequiredEnv(`${network}_L1_PRIVATE_KEY`),
     l2AccountAddress: getRequiredEnv(`${network}_L2_ACCOUNT_ADDRESS`),
     l2PrivateKey: getRequiredEnv(`${network}_L2_PRIVATE_KEY`),
-    l2GasMultiplier: getEnv("L2_GAS_MULTIPLIER") ?? globals.L2_GAS_MULTIPLIER,
+    l2GasMultiplier:
+      Number(getEnv("L2_GAS_MULTIPLIER")) ?? globals.L2_GAS_MULTIPLIER,
     targetDomains:
       getEnv(`${network}_TARGET_DOMAINS`)?.split(",") ??
       globals[`${network}_TARGET_DOMAINS`].split(","),
