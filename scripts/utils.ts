@@ -8,7 +8,7 @@ import { assert } from "ts-essentials";
 import { l2_dai_teleport_gateway } from "types/starknet-contracts";
 
 export class Globals {
-  FLUSH_DELAY = 100;
+  FLUSH_DELAY = 1000000000;
   FLUSH_DELAY_MULTIPLIER = 10;
   FLUSH_MINIMUM = 0;
   L2_GAS_MULTIPLIER = 2;

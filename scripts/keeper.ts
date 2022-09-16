@@ -45,8 +45,9 @@ async function getFlushedDomains(
     logMessageFilter,
     await findNearestBlock(l1Signer.provider, Date.now() - flushDelay)
   );
+  // console.log(logMessageEvents.map((a) => a.args[0]));
   const flushEvents = logMessageEvents.filter((event) => {
-    return event.args[0] === FINALIZE_FLUSH;
+    return event.args.payload[0].eq(FINALIZE_FLUSH);
   });
 
   // eventually get targetDomains from File events
@@ -135,7 +136,7 @@ async function flushesToBeFinalized(
         Date.now() - flushDelayMultiplier * flushDelay
       )
     ).filter((logEvent) => {
-      return logEvent.args[0] === HANDLE_FLUSH;
+      return logEvent.args.payload[0].eq(HANDLE_FLUSH);
     });
   }
 
@@ -156,6 +157,7 @@ async function flushesToBeFinalized(
   }
 
   const logMessageEvents = await getLogMessageEvents();
+  // console.log(logMessageEvents);
   return Promise.all(
     logMessageEvents.filter(async (event: LogMessageToL1Event) => {
       const consumedMessageEvents = await getConsumedSettleMessageEvents(event);
@@ -193,17 +195,22 @@ export async function finalizeFlush(config: Config) {
     l1Signer,
     config
   );
-  for (let i = 1; i < flushes.length; i++) {
+  // console.log(flushes.length);
+  for (let i = 0; i < flushes.length; i++) {
     const flush = flushes[i];
     const targetDomain = cairoShortStringToBytes32(flush.args.payload[1]);
     console.log(
       `Sending \`flush\` transaction - Domain: ${targetDomain} Amount: ${flush.args.payload[2]}`
     );
-    const tx = await l1TeleportGateway.finalizeFlush(
-      targetDomain,
-      flush.args.payload[2]
-    );
-    await tx.wait();
-    console.log("Success");
+    try {
+      const tx = await l1TeleportGateway.finalizeFlush(
+        targetDomain,
+        flush.args.payload[2]
+      );
+      await tx.wait();
+      console.log("Success");
+    } catch (error) {
+      console.log("Failed w/ error : ", error.body);
+    }
   }
 }
