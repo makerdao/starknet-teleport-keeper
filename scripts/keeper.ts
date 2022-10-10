@@ -100,7 +100,7 @@ export async function flush(config: Config) {
           maxFee: gas_consumed.toNumber() * config.l2GasMultiplier,
         }
       );
-
+      console.log(transaction_hash);
       await l2Signer.waitForTransaction(transaction_hash);
       console.log("Success");
     };
