@@ -4172,10 +4172,10 @@ stack-chain@^1.3.7:
   resolved "https://registry.yarnpkg.com/stack-chain/-/stack-chain-1.3.7.tgz#d192c9ff4ea6a22c94c4dd459171e3f00cea1285"
   integrity sha1-0ZLJ/06moiyUxN1FkXHj8AzqEoU=
 
-starknet@^4.4.0:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/starknet/-/starknet-4.4.2.tgz#3da5df044c4aa2607b8f282dd34ad1e167ae3a5e"
-  integrity sha512-tSQNwsx0+27pf2oi1fc1bgGDQO7cHFTWBIm+HLT6yAGs53Y/YRrc6jaxbcEl/826gv36ck53pqmF+85t1ILNMg==
+starknet@^4.11.0:
+  version "4.12.0"
+  resolved "https://registry.yarnpkg.com/starknet/-/starknet-4.12.0.tgz#174e16f0aee2cc7d07f4038e4e250c6db64727c4"
+  integrity sha512-ECoz+eRh99tKars7COvm7FZkPfA1ok36+e1FhL+eyn8Q5wcHPCr85Cyu6ZZBaMmE6038Gt6gHuPsGI0skj0jxw==
   dependencies:
     "@ethersproject/bytes" "^5.6.1"
     bn.js "^5.2.1"
