@@ -39,7 +39,7 @@
 		"lodash": "^4.17.21",
 		"log-tracking": "^1.2.9",
 		"solidity-coverage": "^0.7.20",
-		"starknet": "^4.11.0",
+		"starknet": "^4.9.0",
 		"ts-essentials": "^9.1.2",
 		"typechain": "^8.0.0",
 		"typestrict": "^1.0.2"
