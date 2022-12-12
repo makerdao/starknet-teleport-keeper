@@ -111,10 +111,8 @@ export function getL2Signer({
   l2AccountAddress,
   l2PrivateKey,
 }: Config): starknet.Account {
-  const provider = new starknet.Provider({
-    rpc: {
-      nodeUrl: starknetProviderUrl,
-    },
+  const provider = new starknet.RpcProvider({
+    nodeUrl: starknetProviderUrl,
   });
   const starkKeyPair = starknet.ec.getKeyPair(l2PrivateKey);
   return new starknet.Account(provider, l2AccountAddress, starkKeyPair);

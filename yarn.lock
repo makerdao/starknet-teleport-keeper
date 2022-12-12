@@ -557,10 +557,10 @@
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
 
-"@typechain/starknet@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@typechain/starknet/-/starknet-0.2.0.tgz#9ee9fbd2e97fefc5f457b40a30f1f1f800b7e050"
-  integrity sha512-1KHrhBWlUixgpqEvSLKjNJyQrdGYb2bx/HvV9kKCT+fNvF/M0sLabmIdcZcdCWle3C6CBuyrBQAa9I9ryaRyRw==
+"@typechain/starknet@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@typechain/starknet/-/starknet-0.2.4.tgz#1456795710eda70d0f678e7e109859f9d90d3cc5"
+  integrity sha512-wsydZQ1dmoSxExKoeeg2KLpVnnC/uQfWqQ6UpBW9PonAAQKr491X1w+aQ38VDZUY7rHSEWBZFd/Zl7y/L/Dvew==
   dependencies:
     bn.js "^4.11.0"
     lodash "^4.17.15"
@@ -4377,9 +4377,9 @@ ts-command-line-args@^2.2.0:
     string-format "^2.0.0"
 
 ts-custom-error@^3.2.0:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/ts-custom-error/-/ts-custom-error-3.2.2.tgz#06a567ea92f5df0b61c25722bb4e3772f79c5e5b"
-  integrity sha512-u0YCNf2lf6T/vHm+POKZK1yFKWpSpJitcUN3HxqyEcFuNnHIDbyuIQC7QDy/PsBX3giFyk9rt6BFqBAh2lsDZQ==
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/ts-custom-error/-/ts-custom-error-3.3.1.tgz#8bd3c8fc6b8dc8e1cb329267c45200f1e17a65d1"
+  integrity sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==
 
 ts-essentials@^7.0.1:
   version "7.0.3"
