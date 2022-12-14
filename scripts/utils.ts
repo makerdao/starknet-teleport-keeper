@@ -145,6 +145,7 @@ export async function getL2ContractAt<C extends starknet.Contract>(
   );
   const contractFactory = new starknet.ContractFactory(
     compiledContract,
+    "0x03f7a4ce5403d3a7417d9115a0982bf4bf2bc86bbfd881506a2fb466e41a8575",
     signer
   );
   return contractFactory.attach(address) as C;
