@@ -43,6 +43,17 @@ export function cairoShortStringToBytes32(l2String: BigNumber): string {
   return `0x${l2String.toBigInt().toString(16).padEnd(64, "0")}`;
 }
 
+/**
+ * Converts a short string numeral to a readable string
+ * (short strings cannot have more than 31 characters)
+ * @param {bigint} felt - The short string hex value
+ * @returns {string} - The readable string
+ */
+export function shortStringFeltToStr(felt: bigint): string {
+  const newStrB = Buffer.from(felt.toString(16), "hex");
+  return newStrB.toString();
+}
+
 export function getRequiredEnv(key: string): string {
   const value = process.env[key];
   assert(value, `Please provide ${key} in .env file`);

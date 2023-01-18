@@ -18,6 +18,7 @@ import {
   getL2ContractAt,
   getL2Signer,
   l2String,
+  shortStringFeltToStr,
   toUint,
 } from "./utils";
 
@@ -200,7 +201,9 @@ export async function finalizeFlush(config: Config) {
     const flush = flushes[i];
     const targetDomain = cairoShortStringToBytes32(flush.args.payload[1]);
     console.log(
-      `Sending \`flush\` transaction - Domain: ${targetDomain} Amount: ${flush.args.payload[2]}`
+      `Sending \`finalize flush\` transaction - Domain: ${shortStringFeltToStr(
+        flush.args.payload[1].toBigInt()
+      )} Amount: ${flush.args.payload[2]}`
     );
     try {
       const tx = await l1TeleportGateway.finalizeFlush(
